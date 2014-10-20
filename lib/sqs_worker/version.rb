@@ -1,5 +1,3 @@
-module Sqs
-  module Worker
-    VERSION = "0.0.1"
-  end
+module SqsWorker
+  VERSION = "0.0.1"
 end
