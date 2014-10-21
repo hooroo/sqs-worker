@@ -1,3 +1,5 @@
+require 'sqs_worker/manager'
+
 module SqsWorker
 
   class Runner
@@ -6,8 +8,6 @@ module SqsWorker
     # Each actor when receives a signal should execute
     # appropriate code to exit cleanly
     def self.run_all
-
-      load_dependencies!
 
       self_read, self_write = IO.pipe
 
@@ -66,20 +66,6 @@ module SqsWorker
 
     def self.worker_file_names
       Dir.entries(Rails.root.join('app', 'workers')).select { |file_name| file_name.end_with?('worker.rb') }.reverse
-    end
-
-    def self.load_dependencies!
-      require 'celluloid'
-      require 'celluloid/autostart'
-      require "sqs_worker/signal_handler"
-      require "sqs_worker/manager"
-      require 'sqs_worker/fetcher'
-      require 'sqs_worker/processor'
-      require 'sqs_worker/deleter'
-      require 'sqs_worker/batch_processor'
-      require "sqs_worker/runner"
-      require "sqs_worker/worker"
-      require "sqs_worker/worker_config"
     end
 
   end

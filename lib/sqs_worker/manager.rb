@@ -1,3 +1,10 @@
+require 'sqs_worker/signal_handler'
+require 'sqs_worker/worker_config'
+require 'sqs_worker/fetcher'
+require 'sqs_worker/processor'
+require 'sqs_worker/deleter'
+require 'sqs_worker/batch_processor'
+
 module SqsWorker
   class Manager
     include Celluloid
@@ -20,7 +27,13 @@ module SqsWorker
     end
 
     def bootstrap
-      new_fetch(fetcher.size)
+      fetch_messages(fetcher.size)
+    end
+
+    def fetch_messages(num)
+      after(throttle) do
+        num.times { fetcher.async.fetch unless shutting_down? }
+      end
     end
 
     def fetch_done(messages)
@@ -30,13 +43,7 @@ module SqsWorker
 
     def batch_done(messages)
       deleter.async.delete(messages)
-      new_fetch(1)
-    end
-
-    def new_fetch(num)
-      after(throttle) do
-        num.times { fetcher.async.fetch unless shutting_down? }
-      end
+      fetch_messages(1)
     end
 
     def running?

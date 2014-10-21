@@ -25,5 +25,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "celluloid", "~> 0.16.0"
   spec.add_dependency 'aws-sdk', '~> 1.54.0'
+  spec.add_dependency 'activesupport', '>= 3.1'
 
 end
