@@ -2,24 +2,13 @@ module SqsWorker
 
   class Runner
 
-    # Configures and starts actor system
-    def self.bootstrap
-
-      managers = []
-
-      worker_classes.each do |worker_class|
-        managers << Manager.new(worker_class)
-      end
-
-      run!(managers)
-    rescue Interrupt
-      exit 0
-    end
-
     # Subscribes actors to receive system signals
     # Each actor when receives a signal should execute
     # appropriate code to exit cleanly
-    def self.run!(managers)
+    def self.run_all
+
+      load_dependencies!
+
       self_read, self_write = IO.pipe
 
       ['SIGTERM', 'TERM', 'SIGINT'].each do |sig|
@@ -31,7 +20,6 @@ module SqsWorker
           puts "Signal #{sig} not supported"
         end
       end
-
 
       begin
 
@@ -52,20 +40,15 @@ module SqsWorker
           break
         end
       end
+
+    rescue Interrupt
+      exit 0
     end
 
-
-    def self.configure
-      yield self
+    def self.managers
+      @managers ||= worker_classes.map { |worker_class| Manager.new(worker_class) }
     end
 
-    def self.configuration
-      @configuration
-    end
-
-    def self.configuration=(value)
-      @configuration = value
-    end
 
     def self.worker_classes
 
@@ -76,12 +59,27 @@ module SqsWorker
         if worker_class.ancestors.include?(SqsWorker::Worker)
           workers << worker_class
         end
+
         workers
       end
     end
 
     def self.worker_file_names
       Dir.entries(Rails.root.join('app', 'workers')).select { |file_name| file_name.end_with?('worker.rb') }.reverse
+    end
+
+    def self.load_dependencies!
+      require 'celluloid'
+      require 'celluloid/autostart'
+      require "sqs_worker/signal_handler"
+      require "sqs_worker/manager"
+      require 'sqs_worker/fetcher'
+      require 'sqs_worker/processor'
+      require 'sqs_worker/deleter'
+      require 'sqs_worker/batch_processor'
+      require "sqs_worker/runner"
+      require "sqs_worker/worker"
+      require "sqs_worker/worker_config"
     end
 
   end
