@@ -10,12 +10,14 @@ module SqsWorker
     end
 
     def shutting_down(signal)
-      self.shutting_down = true
+      @shutting_down = true
     end
 
     private
 
-    attr_accessor :shutting_down
+    def shutting_down?
+      !!@shutting_down
+    end
 
   end
 end

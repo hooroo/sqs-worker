@@ -1,4 +1,4 @@
-require 'sqskiq/aws'
+require 'sqs_worker/aws'
 
 module SqsWorker
   class Fetcher

@@ -1,4 +1,4 @@
-require 'sqskiq/signal_handler'
+require 'sqs_worker/signal_handler'
 
 module SqsWorker
   class Manager
@@ -28,7 +28,7 @@ module SqsWorker
 
     def fetch_done(messages)
       self.empty_queue = messages.empty?
-      batcher.async.process(messages) unless shutting_down
+      batcher.async.process(messages) unless shutting_down?
     end
 
     def batch_done(messages)
@@ -38,12 +38,12 @@ module SqsWorker
 
     def new_fetch(num)
       after(throttle) do
-        num.times { fetcher.async.fetch unless shutting_down }
+        num.times { fetcher.async.fetch unless shutting_down? }
       end
     end
 
     def running?
-       !(shutting_down && deleter.busy_size == 0 && batcher.busy_size == 0)
+       !(shutting_down? && deleter.busy_size == 0 && batcher.busy_size == 0)
     end
 
     def throttle
@@ -51,7 +51,7 @@ module SqsWorker
     end
 
     def valid_config_from(worker_class)
-      worker_config = worker_class.sqskiq_options_hash
+      worker_config = worker_class.sqs_worker_options_hash
       num_workers = (worker_config[:processors].nil? || worker_config[:processors].to_i < 2)? 20 : worker_config[:processors]
       # messy code due to celluloid pool constraint of 2 as min pool size: see spec for better understanding
       num_fetchers = num_workers / 10

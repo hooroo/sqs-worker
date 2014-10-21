@@ -1,4 +1,4 @@
-require 'sqskiq/signal_handler'
+require 'sqs_worker/signal_handler'
 
 module SqsWorker
   class BatchProcessor
@@ -20,7 +20,7 @@ module SqsWorker
       success_messages = []
       process_result.each do |result|
 
-        unless shutting_down
+        unless shutting_down?
           value = result.value
           if value[:success]
             success_messages << value[:message]

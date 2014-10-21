@@ -1,4 +1,4 @@
-require 'sqskiq/signal_handler'
+require 'sqs_worker/signal_handler'
 
 module SqsWorker
   class Processor
@@ -11,7 +11,7 @@ module SqsWorker
     end
 
     def process(message)
-      return  { :success => false, :message => message } if shutting_down
+      return  { :success => false, :message => message } if shutting_down?
 
       result = true
 

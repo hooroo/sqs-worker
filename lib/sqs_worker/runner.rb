@@ -4,7 +4,6 @@ module SqsWorker
 
     # Configures and starts actor system
     def self.bootstrap
-      initialize!
 
       managers = []
 

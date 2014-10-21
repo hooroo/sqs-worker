@@ -12,7 +12,7 @@ module SqsWorker
 
       def current_queue
         connection.queues.
-          named(self.sqskiq_options_hash[:queue_name].to_s)
+          named(self.sqs_worker_options_hash[:queue_name].to_s)
       end
 
       def size
@@ -24,17 +24,17 @@ module SqsWorker
       end
 
       def run
-        SqsWorker.bootstrap(sqskiq_options_hash, self)
+        SqsWorker.bootstrap(sqs_worker_options_hash, self)
       end
 
-      def sqskiq_options(options)
-        self.sqskiq_options_hash = options
+      def sqs_worker_options(options)
+        self.sqs_worker_options_hash = options
       end
     end
 
     def self.included(base)
       base.send :extend,  ClassMethods
-      base.class_attribute :sqskiq_options_hash
+      base.class_attribute :sqs_worker_options_hash
     end
   end
 end
