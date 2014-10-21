@@ -10,6 +10,10 @@ module SqsWorker
     Runner.run_all
   end
 
+  def self.configure
+    yield self
+  end
+
   def self.configuration
     @configuration
   end
