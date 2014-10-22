@@ -18,20 +18,17 @@ module SqsWorker
     let(:deleter) { double(Deleter) }
     let(:deleter_pool) { double('deleter', async: deleter ) }
 
-    let(:batcher) { double(BatchProcessor) }
+    let(:batcher) { double(Batcher) }
     let(:batcher_pool) { double('batcher', async: batcher, publish: true ) }
 
-
-
     before do
-      expect(WorkerConfig).to receive(:new).with(worker_class).and_return(worker_config)
-      expect(Processor).to receive(:pool).with(size: worker_config.num_processors, args: worker_class).and_return(processor_pool)
-      expect(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, manager: Manager }]).and_return(fetcher_pool)
-      expect(Deleter).to receive(:pool).with(size: worker_config.num_deleters, args: [worker_config.queue_name]).and_return(deleter_pool)
-      expect(BatchProcessor).to receive(:pool).with(size: worker_config.num_batchers, args: [{ manager: Manager, processor: processor_pool }]).and_return(batcher_pool)
+      allow(WorkerConfig).to receive(:new).with(worker_class).and_return(worker_config)
+      allow(Processor).to receive(:pool).with(size: worker_config.num_processors, args: worker_class).and_return(processor_pool)
+      allow(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, manager: Manager }]).and_return(fetcher_pool)
+      allow(Deleter).to receive(:pool).with(size: worker_config.num_deleters, args: [worker_config.queue_name]).and_return(deleter_pool)
+      allow(Batcher).to receive(:pool).with(size: worker_config.num_batchers, args: [{ manager: Manager, processor: processor_pool }]).and_return(batcher_pool)
       manager
     end
-
 
     context 'while not shutting down' do
 
@@ -100,7 +97,6 @@ module SqsWorker
       end
 
       context "when not shutting down" do
-
         it "returns true" do
           manager.instance_variable_set(:@shutting_down, false)
           expect(manager.running?).to be true
@@ -127,7 +123,6 @@ module SqsWorker
     end
 
     describe "#prepare_for_shutdown" do
-
       it "sends a signal to itself, batcher and processor" do
         expect(batcher_pool).to receive(:publish).with('SIGTERM')
         expect(processor_pool).to receive(:publish).with('SIGTERM')

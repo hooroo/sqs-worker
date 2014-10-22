@@ -1,7 +1,7 @@
 require 'sqs_worker/signal_handler'
 
 module SqsWorker
-  class BatchProcessor
+  class Batcher
     include Celluloid
     include SqsWorker::SignalHandler
 

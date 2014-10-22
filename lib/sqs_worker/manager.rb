@@ -3,7 +3,7 @@ require 'sqs_worker/worker_config'
 require 'sqs_worker/fetcher'
 require 'sqs_worker/processor'
 require 'sqs_worker/deleter'
-require 'sqs_worker/batch_processor'
+require 'sqs_worker/batcher'
 
 module SqsWorker
   class Manager
@@ -12,18 +12,12 @@ module SqsWorker
 
     def initialize(worker_class)
 
-      config = WorkerConfig.new(worker_class)
-
+      @config = WorkerConfig.new(worker_class)
       @empty_queue = false
       @empty_queue_throttle = config.empty_queue_throttle
-
-      @processor = Processor.pool(size: config.num_processors, args: worker_class)
-      @fetcher = Fetcher.pool(size: config.num_fetchers, args: [{ queue_name: config.queue_name, manager: self }])
-      @deleter = Deleter.pool(size: config.num_deleters, args: [config.queue_name])
-      @batcher = BatchProcessor.pool(size: config.num_batchers, args: [{ manager: self, processor: @processor }])
+      @worker_class = worker_class
 
       subscribe_for_shutdown
-
     end
 
     def bootstrap
@@ -58,12 +52,30 @@ module SqsWorker
 
     private
 
-    attr_reader :batcher, :fetcher, :processor, :deleter, :empty_queue_throttle
+    attr_reader :worker_class, :config, :empty_queue_throttle
     attr_accessor :empty_queue
+
+    def processor
+      @processor ||= Processor.pool(size: config.num_processors, args: worker_class)
+    end
+
+    def fetcher
+      @fetcher ||= Fetcher.pool(size: config.num_fetchers, args: [{ queue_name: config.queue_name, manager: self }])
+    end
+
+    def deleter
+      @deleter ||= Deleter.pool(size: config.num_deleters, args: [config.queue_name])
+    end
+
+    def batcher
+      @batcher ||= Batcher.pool(size: config.num_batchers, args: [{ manager: self, processor: processor }])
+    end
 
     def throttle
       empty_queue ? empty_queue_throttle : 0
     end
+
+
 
   end
 end
