@@ -21,4 +21,15 @@ module SqsWorker
   def self.configuration=(value)
     @configuration = value
   end
+
+  def self.logger
+    raise "Please specify a logger for the sqs worker gem via SqsWorker.logger = my_logger" if @logger.nil?
+    @logger
+  end
+
+  def self.logger=(logger)
+    @logger = logger
+  end
+
+
 end

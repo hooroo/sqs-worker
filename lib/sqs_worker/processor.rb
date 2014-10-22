@@ -18,6 +18,7 @@ module SqsWorker
       begin
         worker_instance.perform(message)
       rescue Exception => e
+        SqsWorker.logger.error("SqsWorker Error: #{e.backtrace}")
         result = false
       ensure
         ::ActiveRecord::Base.clear_active_connections! if defined?(::ActiveRecord)
