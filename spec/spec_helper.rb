@@ -20,7 +20,6 @@ RSpec.configure do |config|
   config.order = "random"
 
   config.before(:each) do
-    puts 'Booting celuloid'
     Celluloid.boot
   end
 

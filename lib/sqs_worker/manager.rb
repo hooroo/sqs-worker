@@ -47,11 +47,7 @@ module SqsWorker
     end
 
     def running?
-       !(shutting_down? && deleter.busy_size == 0 && batcher.busy_size == 0)
-    end
-
-    def throttle
-      empty_queue ? empty_queue_throttle : 0
+      !shutting_down? || deleter.busy_size > 0 || batcher.busy_size > 0
     end
 
     def prepare_for_shutdown
@@ -63,7 +59,11 @@ module SqsWorker
     private
 
     attr_reader :batcher, :fetcher, :processor, :deleter, :empty_queue_throttle
-    attr_accessor :empty_queue
+    attr_accessor :empty_queue    
+
+    def throttle
+      empty_queue ? empty_queue_throttle : 0
+    end
 
   end
 end

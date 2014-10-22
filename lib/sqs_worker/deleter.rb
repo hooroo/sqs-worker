@@ -10,7 +10,7 @@ module SqsWorker
     end
 
     def delete(messages)
-      delete_sqs_messages(messages) if not messages.empty?
+      delete_sqs_messages(messages) unless messages.empty?
     end
   end
 end
