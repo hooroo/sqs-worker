@@ -3,14 +3,18 @@ require 'sqs_worker/aws'
 module SqsWorker
   class Deleter
     include Celluloid
-    include SqsWorker::AWS
 
-    def initialize(queue_name:, configuration: {})
-      init_queue(queue_name, configuration)
+    def initialize(queue_name)
+      @queue = AWS.instance.find_queue(queue_name)
     end
 
     def delete(messages)
-      delete_sqs_messages(messages) unless messages.empty?
+      queue.batch_delete(messages) unless messages.empty?
     end
+
+    private
+
+    attr_reader :queue
+
   end
 end

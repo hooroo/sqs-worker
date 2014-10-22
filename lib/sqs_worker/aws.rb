@@ -1,24 +1,22 @@
 require 'aws-sdk'
+require 'singleton'
 
 module SqsWorker
-  module AWS
+  class AWS
 
-    def init_queue(queue_name, configuration = {})
-      sqs = ::AWS::SQS.new(configuration)
-      self.queue = sqs.queues.named(queue_name.to_s)
+    include Singleton
+
+    def initialize
+      @sqs = ::AWS::SQS.new(SqsWorker.configuration)
     end
 
-    def fetch_sqs_messages
-      queue.receive_message(:limit => 10, :attributes => [:receive_count])
-    end
-
-    def delete_sqs_messages(messages)
-      queue.batch_delete(messages)
+    def find_queue(queue_name)
+      sqs.queues.named(queue_name.to_s)
     end
 
     private
 
-    attr_accessor :queue
+    attr_reader :sqs
 
   end
 end

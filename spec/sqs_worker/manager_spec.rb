@@ -21,11 +21,13 @@ module SqsWorker
     let(:batcher) { double(BatchProcessor) }
     let(:batcher_pool) { double('batcher', async: batcher, publish: true ) }
 
+
+
     before do
       expect(WorkerConfig).to receive(:new).with(worker_class).and_return(worker_config)
       expect(Processor).to receive(:pool).with(size: worker_config.num_processors, args: worker_class).and_return(processor_pool)
-      expect(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, configuration: SqsWorker.configuration, manager: Manager }]).and_return(fetcher_pool)
-      expect(Deleter).to receive(:pool).with(size: worker_config.num_deleters, args: [{ queue_name: worker_config.queue_name, configuration: SqsWorker.configuration }]).and_return(deleter_pool)
+      expect(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, manager: Manager }]).and_return(fetcher_pool)
+      expect(Deleter).to receive(:pool).with(size: worker_config.num_deleters, args: [worker_config.queue_name]).and_return(deleter_pool)
       expect(BatchProcessor).to receive(:pool).with(size: worker_config.num_batchers, args: [{ manager: Manager, processor: processor_pool }]).and_return(batcher_pool)
       manager
     end
@@ -109,7 +111,7 @@ module SqsWorker
 
         let(:deleter_pool) { double('deleter', busy_size: 1 ) }
 
-        it "returns true" do          
+        it "returns true" do
           expect(manager.running?).to be true
         end
       end

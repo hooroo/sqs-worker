@@ -18,8 +18,8 @@ module SqsWorker
       @empty_queue_throttle = config.empty_queue_throttle
 
       @processor = Processor.pool(size: config.num_processors, args: worker_class)
-      @fetcher = Fetcher.pool(size: config.num_fetchers, args: [{ queue_name: config.queue_name, configuration: SqsWorker.configuration, manager: self }])
-      @deleter = Deleter.pool(size: config.num_deleters, args: [{ queue_name: config.queue_name, configuration: SqsWorker.configuration }])
+      @fetcher = Fetcher.pool(size: config.num_fetchers, args: [{ queue_name: config.queue_name, manager: self }])
+      @deleter = Deleter.pool(size: config.num_deleters, args: [config.queue_name])
       @batcher = BatchProcessor.pool(size: config.num_batchers, args: [{ manager: self, processor: @processor }])
 
       subscribe_for_shutdown
@@ -59,7 +59,7 @@ module SqsWorker
     private
 
     attr_reader :batcher, :fetcher, :processor, :deleter, :empty_queue_throttle
-    attr_accessor :empty_queue    
+    attr_accessor :empty_queue
 
     def throttle
       empty_queue ? empty_queue_throttle : 0
