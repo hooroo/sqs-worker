@@ -10,7 +10,7 @@ module SqsWorker
     subject(:worker_config) { double(WorkerConfig, num_processors: 10, num_fetchers: 2, num_batchers: 2, num_deleters: 2, queue_name: 'test-queue', empty_queue_throttle: 10) }
 
     let(:processor) { double(Processor) }
-    let(:processor_pool) { double('processor', async: processor ) }
+    let(:processor_pool) { double('processor', async: processor, publish: true ) }
 
     let(:fetcher) { double(Fetcher) }
     let(:fetcher_pool) { double('fetcher', async: fetcher, size: worker_config.num_fetchers ) }
@@ -19,7 +19,7 @@ module SqsWorker
     let(:deleter_pool) { double('deleter', async: deleter ) }
 
     let(:batcher) { double(BatchProcessor) }
-    let(:batcher_pool) { double('batcher', async: batcher ) }
+    let(:batcher_pool) { double('batcher', async: batcher, publish: true ) }
 
     before do
       expect(WorkerConfig).to receive(:new).with(worker_class).and_return(worker_config)
@@ -122,31 +122,17 @@ module SqsWorker
           expect(manager.running?).to be true
         end
       end
-
-
     end
 
-    # describe "#throttle" do
+    describe "#prepare_for_shutdown" do
 
-    #   context "when the queue is empty" do
-
-    #     it "sets the throttle to the empty_queue_throttle value" do
-    #       # manager.empty_queue = true
-    #       manager.send(:empty_queue=, true) # dodgy?
-    #       expect(manager.throttle).to eq(worker_config.empty_queue_throttle)
-    #     end
-    #   end
-
-    #   context "when the queue is not empty" do
-
-    #     it "sets the throttle to zero" do
-    #       # manager.empty_queue = false
-    #       manager.send(:empty_queue=, false) # dodgy?
-    #       expect(manager.throttle).to eq(0)
-    #     end
-    #   end
-    # end
-
+      it "sends a signal to itself, batcher and processor" do
+        expect(batcher_pool).to receive(:publish).with('SIGTERM')
+        expect(processor_pool).to receive(:publish).with('SIGTERM')
+        manager.prepare_for_shutdown
+        expect(manager.shutting_down?).to be true
+      end
+    end
   end
 end
 

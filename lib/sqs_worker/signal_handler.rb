@@ -13,8 +13,6 @@ module SqsWorker
       @shutting_down = true
     end
 
-    private
-
     def shutting_down?
       !!@shutting_down
     end
