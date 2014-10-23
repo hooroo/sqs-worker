@@ -3,10 +3,9 @@ module SqsWorker
 
     attr_reader :num_processors, :num_fetchers, :num_batchers, :num_deleters, :queue_name, :empty_queue_throttle
 
-    def initialize(worker_class)
+    def initialize(config)
 
-      worker_config = worker_class.config
-      num_processors = (worker_config[:processors].nil? || worker_config[:processors].to_i < 2) ? 20 : worker_config[:processors]
+      num_processors = (config[:processors].nil? || config[:processors].to_i < 2) ? 20 : config[:processors]
       # messy code due to celluloid pool constraint of 2 as min pool size: see spec for better understanding
       num_fetchers = num_processors / 10
       num_fetchers = num_fetchers + 1 if num_processors % 10 > 0
@@ -18,8 +17,8 @@ module SqsWorker
       @num_fetchers = num_fetchers
       @num_batchers = num_batchers
       @num_deleters = num_deleters
-      @queue_name = worker_config[:queue_name]
-      @empty_queue_throttle = worker_config[:empty_queue_throttle] || 0
+      @queue_name = config[:queue_name]
+      @empty_queue_throttle = config[:empty_queue_throttle] || 0
 
     end
 
