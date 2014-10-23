@@ -5,7 +5,7 @@ module SqsWorker
 
     def initialize(worker_class)
 
-      worker_config = worker_class.sqs_worker_options_hash
+      worker_config = worker_class.config
       num_processors = (worker_config[:processors].nil? || worker_config[:processors].to_i < 2) ? 20 : worker_config[:processors]
       # messy code due to celluloid pool constraint of 2 as min pool size: see spec for better understanding
       num_fetchers = num_processors / 10
