@@ -12,23 +12,20 @@ module SqsWorker
     end
 
     def process(messages)
-      process_result = []
-      messages.each do |message|
-        process_result << processor.future.process(message)
-      end
 
-      success_messages = []
-      process_result.each do |result|
+      successful_messages = []
 
-        unless shutting_down?
-          value = result.value
-          if value[:success]
-            success_messages << value[:message]
-          end
+      unless shutting_down?
+
+        processed_results = messages.to_a.map { |message| processor.future.process(message) }
+
+        processed_results.each do |result|
+          successful_messages << result.value[:message] if result.value[:success]
         end
+
       end
 
-      manager.batch_done(success_messages)
+      manager.batch_done(successful_messages)
     end
 
     private

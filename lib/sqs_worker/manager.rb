@@ -13,9 +13,9 @@ module SqsWorker
     def initialize(worker_class)
 
       @config = worker_class.config
-      @empty_queue = false
       @empty_queue_throttle = config.empty_queue_throttle
       @worker_class = worker_class
+      @empty_queue = false
 
       subscribe_for_shutdown
     end

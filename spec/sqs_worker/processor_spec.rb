@@ -16,7 +16,7 @@ module SqsWorker
         allow(TestWorker).to receive(:new).and_return(worker)
       end
 
-      context 'while not shutting down' do
+      context 'when not shutting down' do
 
         context 'when the worker does not raise an exception' do
 
@@ -72,7 +72,7 @@ module SqsWorker
         end
       end
 
-      context 'while shutting down' do
+      context 'when shutting down' do
 
         before do
           processor.publish('SIGTERM')
