@@ -6,31 +6,40 @@ module SqsWorker
     include SqsWorker::SignalHandler
 
     def initialize(worker_class)
-      @worker_instance = worker_class.new
+      @worker_class = worker_class
       subscribe_for_shutdown
     end
 
     def process(message)
-      return  { :success => false, :message => message } if shutting_down?
+      return  { success: false, message: message } if shutting_down?
 
       result = true
 
       begin
-        worker_instance.perform(message)
-      rescue Exception => e
-        SqsWorker.logger.error("SqsWorker Error: #{e.backtrace}")
+        worker_class.new.perform(message)
+      rescue Exception => exception
+        log_exception(exception)
         result = false
       ensure
         ::ActiveRecord::Base.clear_active_connections! if defined?(::ActiveRecord)
       end
 
-      return { :success => result, :message => message }
+      return { success: result, message: message }
 
     end
 
     private
 
-    attr_reader :worker_instance
+    attr_reader :worker_class
+
+    def log_exception(exception)
+      SqsWorker.logger.error({
+        event_name: :sqs_worker_error,
+        worker_class: worker_class.name,
+        error_class: exception.class.name,
+        backtrace: exception.backtrace
+      })
+    end
 
   end
 end

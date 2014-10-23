@@ -18,8 +18,8 @@ module SqsWorker
     @configuration
   end
 
-  def self.configuration=(value)
-    @configuration = value
+  def self.configuration=(configuration)
+    @configuration = configuration
   end
 
   def self.logger
@@ -30,6 +30,5 @@ module SqsWorker
   def self.logger=(logger)
     @logger = logger
   end
-
 
 end

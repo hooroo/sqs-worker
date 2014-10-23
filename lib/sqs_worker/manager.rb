@@ -75,7 +75,5 @@ module SqsWorker
       empty_queue ? empty_queue_throttle : 0
     end
 
-
-
   end
 end
