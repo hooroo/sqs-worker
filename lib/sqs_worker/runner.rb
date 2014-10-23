@@ -1,4 +1,5 @@
 require 'sqs_worker/manager'
+require 'sqs_worker/worker_resolver'
 
 module SqsWorker
 
