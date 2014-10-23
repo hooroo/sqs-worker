@@ -4,8 +4,8 @@ module SqsWorker
   module Worker
     module ClassMethods
 
-      def configure(config)
-        self.config = WorkerConfig.new(config)
+      def configure(configuration)
+        self.config = WorkerConfig.new(configuration)
       end
 
     end
