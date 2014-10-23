@@ -4,28 +4,21 @@ module SqsWorker
 
   class Runner
 
-    # Subscribes actors to receive system signals
-    # Each actor when receives a signal should execute
-    # appropriate code to exit cleanly
+    #Find all workers and start processing messages from their configured queues
     def self.run_all
 
-      self_read, self_write = IO.pipe
+      read_io, write_io = IO.pipe
 
-      ['SIGTERM', 'TERM', 'SIGINT'].each do |sig|
-        begin
-          trap sig do
-            self_write.puts(sig)
-          end
-        rescue ArgumentError
-          puts "Signal #{sig} not supported"
-        end
-      end
+      trap_signals(write_io)
 
       begin
 
+        worker_classes = WorkerResolver.new.resolve_worker_classes
+        managers = worker_classes.map { |worker_class| Manager.new(worker_class) }
+
         managers.each(&:bootstrap)
 
-        while readable_io = IO.select([self_read])
+        while readable_io = IO.select([read_io])
 
           signal = readable_io.first[0].gets.strip
 
@@ -45,27 +38,12 @@ module SqsWorker
       exit 0
     end
 
-    def self.managers
-      @managers ||= worker_classes.map { |worker_class| Manager.new(worker_class) }
-    end
-
-
-    def self.worker_classes
-
-      worker_file_names.inject([]) do |workers, file_name|
-
-        worker_class = file_name.gsub('.rb','').camelize.constantize
-
-        if worker_class.ancestors.include?(SqsWorker::Worker)
-          workers << worker_class
+    def self.trap_signals(write_io)
+      ['SIGTERM', 'TERM', 'SIGINT'].each do |signal|
+        trap(signal) do
+          write_io.puts(signal)
         end
-
-        workers
       end
-    end
-
-    def self.worker_file_names
-      Dir.entries(Rails.root.join('app', 'workers')).select { |file_name| file_name.end_with?('worker.rb') }.reverse
     end
 
   end
