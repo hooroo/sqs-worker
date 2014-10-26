@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'sqs_worker/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "sqs-worker"
+  spec.name          = "sqs_worker"
   spec.version       = SqsWorker::VERSION
   spec.authors       = ["Rob Monie"]
   spec.email         = ["robmonie@gmail.com"]
