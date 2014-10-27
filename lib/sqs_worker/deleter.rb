@@ -5,7 +5,7 @@ module SqsWorker
     include Celluloid
 
     def initialize(queue_name)
-      @queue = AWS.instance.find_queue(queue_name)
+      @queue = Aws.instance.find_queue(queue_name)
     end
 
     def delete(messages)

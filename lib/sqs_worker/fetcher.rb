@@ -9,7 +9,7 @@ module SqsWorker
 
 
     def initialize(queue_name:, manager:)
-      @queue = AWS.instance.find_queue(queue_name)
+      @queue = Aws.instance.find_queue(queue_name)
       @manager = manager
     end
 

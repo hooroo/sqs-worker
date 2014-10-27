@@ -8,11 +8,11 @@ module SqsWorker
     subject(:deleter) { described_class.new(queue_name)}
     let(:queue_name) { 'queue_name' }
 
-    let (:aws) { double(AWS, find_queue: queue) }
+    let (:aws) { double(Aws, find_queue: queue) }
     let (:queue) { double('queue') }
 
     before do
-      expect(AWS).to receive(:instance).and_return(aws)
+      expect(Aws).to receive(:instance).and_return(aws)
       expect(aws).to receive(:find_queue).and_return(queue)
     end
 

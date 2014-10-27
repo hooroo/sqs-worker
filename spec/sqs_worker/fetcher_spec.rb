@@ -8,12 +8,12 @@ module SqsWorker
 
     let(:queue_name) { 'queue_name' }
     let(:manager) { double(Manager)}
-    let (:aws) { double(AWS, find_queue: queue) }
+    let (:aws) { double(Aws, find_queue: queue) }
     let (:queue) { double('queue') }
     let(:messages) { ['message'] }
 
     before do
-      expect(AWS).to receive(:instance).and_return(aws)
+      expect(Aws).to receive(:instance).and_return(aws)
       expect(aws).to receive(:find_queue).and_return(queue)
     end
 
