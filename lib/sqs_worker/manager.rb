@@ -20,7 +20,7 @@ module SqsWorker
       subscribe_for_shutdown
     end
 
-    def bootstrap
+    def start
       fetch_messages(fetcher.size)
     end
 

@@ -32,11 +32,11 @@ module SqsWorker
 
     context 'while not shutting down' do
 
-      describe '#fetch_messages / bootstrap' do
+      describe '#fetch_messages / start' do
 
         it 'fetches messages based on number of fetchers' do
           expect(fetcher).to receive(:fetch).exactly(fetcher_pool.size).times
-          manager.bootstrap
+          manager.start
         end
       end
 
@@ -55,11 +55,11 @@ module SqsWorker
         manager.shutting_down(nil)
       end
 
-      describe '#fetch_messages / bootstrap' do
+      describe '#fetch_messages / start' do
 
         it 'does not fetch any new messages' do
           expect(fetcher).to_not receive(:fetch)
-          manager.bootstrap
+          manager.start
         end
       end
 

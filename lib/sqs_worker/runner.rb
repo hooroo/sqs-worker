@@ -15,23 +15,21 @@ module SqsWorker
       begin
 
         worker_classes = WorkerResolver.new.resolve_worker_classes
+
         managers = worker_classes.map { |worker_class| Manager.new(worker_class) }
 
-        managers.each(&:bootstrap)
+        managers.each(&:start)
 
-        while readable_io = IO.select([read_io])
-
-          signal = readable_io.first[0].gets.strip
+        on_signal_received(read_io) do
 
           managers.each(&:prepare_for_shutdown)
 
-          while managers.all?(&:running?)
-            sleep 2
+          while managers.any?(&:running?)
+            sleep 1
           end
 
           managers.each(&:terminate)
 
-          break
         end
       end
 
@@ -39,9 +37,14 @@ module SqsWorker
       exit 0
     end
 
+    def self.on_signal_received(read_io, &block)
+      IO.select([read_io]) #This will block until signal received
+      yield
+    end
+
     def self.trap_signals(write_io)
       ['SIGTERM', 'TERM', 'SIGINT'].each do |signal|
-        trap(signal) do
+        Signal.trap(signal) do
           write_io.puts(signal)
         end
       end
