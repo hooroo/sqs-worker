@@ -8,6 +8,16 @@ module SqsWorker
     subject(:processor) { described_class.new(TestWorker) }
     let(:message) { { foo: 'bar' } }
     let(:worker) { double(TestWorker) }
+    let(:logger) { double('logger', info: nil) }
+
+
+    before do
+      SqsWorker.logger = logger
+    end
+
+    after do
+      SqsWorker.logger = nil
+    end
 
 
     describe '#process' do
@@ -27,6 +37,11 @@ module SqsWorker
           it 'succesfully processes the worker' do
             result = processor.process(message)
             expect(result[:success]).to be true
+          end
+
+          it 'logs the processing of message' do
+            expect(logger).to receive(:info).with(event_name: "sqs_worker_processed_message", type: TestWorker)
+            processor.process(message)
           end
 
           it 'clears active connections on active record' do

@@ -10,6 +10,8 @@ module SqsWorker
     include Celluloid
     include SqsWorker::SignalHandler
 
+    attr_reader :worker_class
+
     def initialize(worker_class)
 
       @config = worker_class.config
@@ -21,6 +23,7 @@ module SqsWorker
     end
 
     def start
+      logger.info(event_name: "sqs_worker_starting_manager", type: worker_class)
       fetch_messages(fetcher.size)
     end
 
@@ -45,6 +48,7 @@ module SqsWorker
     end
 
     def prepare_for_shutdown
+      SqsWorker.logger.info(event_name: "sqs_worker_prepare_for_shutdown", type: worker_class)
       self.publish('SIGTERM')
       batcher.publish('SIGTERM')
       processor.publish('SIGTERM')
@@ -52,7 +56,7 @@ module SqsWorker
 
     private
 
-    attr_reader :worker_class, :config, :empty_queue_throttle
+    attr_reader :config, :empty_queue_throttle
     attr_accessor :empty_queue
 
     def processor
@@ -73,6 +77,10 @@ module SqsWorker
 
     def throttle
       empty_queue ? empty_queue_throttle : 0
+    end
+
+    def logger
+      SqsWorker.logger
     end
 
   end

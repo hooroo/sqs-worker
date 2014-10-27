@@ -17,6 +17,7 @@ module SqsWorker
 
       begin
         worker_class.new.perform(message)
+        SqsWorker.logger.info(event_name: "sqs_worker_processed_message", type: worker_class)
       rescue Exception => exception
         log_exception(exception)
         result = false

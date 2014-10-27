@@ -21,7 +21,10 @@ module SqsWorker
     let(:batcher) { double(Batcher) }
     let(:batcher_pool) { double('batcher', async: batcher, publish: true ) }
 
+    let(:logger) { double('logger', info: nil) }
+
     before do
+      SqsWorker.logger = logger
       allow(StubWorker).to receive(:config).and_return(worker_config)
       allow(Processor).to receive(:pool).with(size: worker_config.num_processors, args: worker_class).and_return(processor_pool)
       allow(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, manager: Manager }]).and_return(fetcher_pool)
@@ -30,12 +33,21 @@ module SqsWorker
       manager
     end
 
+    after do
+      SqsWorker.logger = nil
+    end
+
     context 'while not shutting down' do
 
       describe '#fetch_messages / start' do
 
         it 'fetches messages based on number of fetchers' do
           expect(fetcher).to receive(:fetch).exactly(fetcher_pool.size).times
+          manager.start
+        end
+
+        it 'logs start' do
+          expect(logger).to receive(:info).with(event_name: "sqs_worker_starting_manager", type: worker_class)
           manager.start
         end
       end
@@ -126,9 +138,11 @@ module SqsWorker
       it "sends a signal to itself, batcher and processor" do
         expect(batcher_pool).to receive(:publish).with('SIGTERM')
         expect(processor_pool).to receive(:publish).with('SIGTERM')
+        expect(logger).to receive(:info).with(event_name: "sqs_worker_prepare_for_shutdown", type: worker_class)
         manager.prepare_for_shutdown
         expect(manager.shutting_down?).to be true
       end
+
     end
   end
 end

@@ -12,14 +12,20 @@ module SqsWorker
       let(:worker_class_a) { double(Class) }
       let(:worker_class_b) { double(Class) }
       let(:worker_classes) { [worker_class_a, worker_class_b] }
-      let(:manager_a) { double(Manager) }
-      let(:manager_b) { double(Manager) }
+      let(:manager_a) { double(Manager, worker_class: worker_class_a) }
+      let(:manager_b) { double(Manager, worker_class: worker_class_b) }
+      let(:logger) { double('logger', info: nil) }
 
 
       before do
+        SqsWorker.logger = logger
         expect(IO).to receive(:pipe).and_return [read_io, write_io]
         expect(IO).to receive(:select).with([read_io])
         expect(WorkerResolver).to receive(:new).and_return worker_resolver
+      end
+
+      after do
+        SqsWorker.logger = nil
       end
 
       it "traps signals" do
@@ -53,6 +59,9 @@ module SqsWorker
         expect(manager_a).to receive(:running?).once.and_return(true)
         expect(manager_a).to receive(:running?).once.and_return(false)
         expect(manager_b).to receive(:running?).and_return(false)
+
+        expect(logger).to receive(:info).with(event_name: "sqs_worker_shutdown_complete", type: manager_a.worker_class)
+        expect(logger).to receive(:info).with(event_name: "sqs_worker_shutdown_complete", type: manager_b.worker_class)
 
         expect(manager_a).to receive(:terminate)
         expect(manager_b).to receive(:terminate)
