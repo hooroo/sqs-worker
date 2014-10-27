@@ -22,7 +22,7 @@ Or install it yourself as:
 
 ### Configuration
 
-Create `sqs.yml` with correct settings for each environment:
+Create `config/sqs.yml` with correct settings for each environment:
 
 ```yaml
 production:
