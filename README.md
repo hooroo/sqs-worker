@@ -57,8 +57,6 @@ test:
 Add an initializer to your application to load configuration and set the logger.
 
 ```ruby
-require 'sqs_worker'
-
 SqsWorker.configuration = YAML.load(File.read("#{Rails.root}/config/sqs.yml"))[Rails.env]
 SqsWorker.logger = Slate::Logger #  Can use any logger here
 
@@ -71,8 +69,6 @@ Adding workers for processing SQS messages is simple as creating workers in the 
 Eg: A worker named `app/workers/things_to_do_worker.rb'.
 
 ```ruby
-require 'sqs_worker'
-
 class ThingsToDoWorker
 
   include SqsWorker::Worker
