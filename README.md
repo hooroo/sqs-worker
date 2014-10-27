@@ -81,7 +81,7 @@ class ThingsToDoWorker
 end
 ```
 
-As long as the workers are named appropriately for ruby naming conventions and include `SqsWorker::Worker`, they will be discovered and run, picking up new messages as they are placed on the queue and run with a configurable level of parallelisation.
+As long as the workers and their file names are named using ruby naming conventions and include `SqsWorker::Worker`, they will be discovered and run. Each worker manager will fetch new messages from the queue in batches of up to 10 messages and processed with a configurable level of parallelisation.
 
 ### Configuring the number of worker processors
 
@@ -92,5 +92,7 @@ configure queue_name: "things-to-do", processors: 25
 ```
 
 The default number of processors per worker is 20.  At this point there is no optimisation around the number of processors per worker for a given instance, so as worker classes are added to a given application, this number may need tweaking.  Longer term we may want to centralise the management of how many processors are assigned to each worker based on all the workers in the app and the resources available.
+
+On MRI, the more IO that occurrs with fetching and processing messages, the more opportunity for parallelisation of the workers.
 
 
