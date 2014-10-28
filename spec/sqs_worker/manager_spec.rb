@@ -7,7 +7,17 @@ module SqsWorker
     subject(:manager) { described_class.new(worker_class) }
 
     let(:worker_class) { StubWorker }
-    let(:worker_config) { double(WorkerConfig, num_processors: 10, num_fetchers: 2, num_batchers: 2, num_deleters: 2, queue_name: 'test-queue', empty_queue_throttle: 10) }
+    let(:worker_config) do
+      double(WorkerConfig, {
+        num_processors: 10,
+        num_fetchers: 2,
+        num_batchers: 2,
+        num_deleters: 2,
+        queue_name: 'test-queue',
+        empty_queue_throttle: 10,
+        fetcher_batch_size: 5
+      })
+    end
 
     let(:processor) { double(Processor) }
     let(:processor_pool) { double('processor', async: processor, publish: true ) }
@@ -27,7 +37,7 @@ module SqsWorker
       SqsWorker.logger = logger
       allow(StubWorker).to receive(:config).and_return(worker_config)
       allow(Processor).to receive(:pool).with(size: worker_config.num_processors, args: worker_class).and_return(processor_pool)
-      allow(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, manager: Manager }]).and_return(fetcher_pool)
+      allow(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, manager: Manager, batch_size: worker_config.fetcher_batch_size }]).and_return(fetcher_pool)
       allow(Deleter).to receive(:pool).with(size: worker_config.num_deleters, args: [worker_config.queue_name]).and_return(deleter_pool)
       allow(Batcher).to receive(:pool).with(size: worker_config.num_batchers, args: [{ manager: Manager, processor: processor_pool }]).and_return(batcher_pool)
       manager

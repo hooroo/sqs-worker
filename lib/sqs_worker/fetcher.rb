@@ -4,25 +4,22 @@ module SqsWorker
   class Fetcher
     include Celluloid
 
-    MESSAGE_FETCH_LIMIT = 10
-    RECEIVE_ATTRS = { :limit => MESSAGE_FETCH_LIMIT, :attributes => [:receive_count] }
-
-
-    def initialize(queue_name:, manager:)
+    def initialize(queue_name:, manager:, batch_size:)
       @queue_name = queue_name
       @queue = Aws.instance.find_queue(queue_name)
       @manager = manager
+      @batch_size = batch_size
     end
 
     def fetch
-      messages = queue.receive_message(RECEIVE_ATTRS)
+      messages = queue.receive_message({ :limit => batch_size, :attributes => [:receive_count] })
       log_fetched_messages(messages)
       manager.fetch_done(messages)
     end
 
     private
 
-    attr_reader :manager, :queue, :queue_name
+    attr_reader :manager, :queue, :queue_name, :batch_size
 
     def log_fetched_messages(messages)
       SqsWorker.logger.info(event_name: "sqs_worker_fetched_messages", queue: queue_name, size: messages.size) unless messages.empty?

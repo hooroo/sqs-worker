@@ -11,7 +11,7 @@ module SqsWorker
       let(:config) do
         {
           queue_name: 'queue',
-          processors: 30,
+          processors: 20,
           empty_queue_throttle: 5
         }
       end
@@ -28,16 +28,20 @@ module SqsWorker
         expect(worker_config.num_processors).to eq config[:processors]
       end
 
-      it 'sets the number of fetchers to the optimal size' do
-        expect(worker_config.num_fetchers).to eq(config[:processors] / Fetcher::MESSAGE_FETCH_LIMIT)
+      it 'sets the fetcher batch size to the correct size' do
+        expect(worker_config.fetcher_batch_size).to eq(config[:processors] / worker_config.num_fetchers)
+      end
+
+      it 'sets the number of fetchers to the correct size' do
+        expect(worker_config.num_fetchers).to eq(WorkerConfig::MIN_POOL_SIZE)
       end
 
       it 'sets the number of batchers to the optimal size' do
-        expect(worker_config.num_batchers).to eq(config[:processors] / Fetcher::MESSAGE_FETCH_LIMIT)
+        expect(worker_config.num_batchers).to eq(WorkerConfig::MIN_POOL_SIZE)
       end
 
       it 'sets the number of deleters to the optimal size' do
-        expect(worker_config.num_deleters).to eq(config[:processors] / Fetcher::MESSAGE_FETCH_LIMIT)
+        expect(worker_config.num_deleters).to eq(WorkerConfig::MIN_POOL_SIZE)
       end
 
     end
@@ -66,6 +70,28 @@ module SqsWorker
 
       it 'sets the number of deleters to the minimum pool size' do
         expect(worker_config.num_deleters).to eq(WorkerConfig::MIN_POOL_SIZE)
+      end
+
+    end
+
+    context 'with number of processors that maxes out the fetch batch size' do
+
+      let(:num_processors) { WorkerConfig::MAX_FETCH_BATCH_SIZE * WorkerConfig::MIN_POOL_SIZE + 1 }
+
+      let(:config) do
+        {
+          queue_name: 'queue',
+          empty_queue_throttle: 5,
+          processors: num_processors
+        }
+      end
+
+      it 'sets the number of processors to the configured amount' do
+        expect(worker_config.num_processors).to eq num_processors
+      end
+
+      it 'sets the fetcher batch size to the maximum allowable size (defined by aws-sdk)' do
+        expect(worker_config.fetcher_batch_size).to eq(WorkerConfig::MAX_FETCH_BATCH_SIZE)
       end
 
     end

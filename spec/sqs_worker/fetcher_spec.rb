@@ -4,8 +4,9 @@ require 'sqs_worker/fetcher'
 module SqsWorker
   describe Fetcher do
 
-    subject(:fetcher) { described_class.new(queue_name: queue_name, manager: manager) }
+    subject(:fetcher) { described_class.new(queue_name: queue_name, manager: manager, batch_size: batch_size) }
 
+    let(:batch_size) { 5 }
     let(:queue_name) { 'queue_name' }
     let(:manager) { double(Manager)}
     let (:aws) { double(Aws, find_queue: queue) }
@@ -24,7 +25,7 @@ module SqsWorker
     end
 
     it 'fetches messages from the queue and passes to manager' do
-      expect(queue).to receive(:receive_message).with(Fetcher::RECEIVE_ATTRS).and_return(messages)
+      expect(queue).to receive(:receive_message).with({ :limit => batch_size, :attributes => [:receive_count] }).and_return(messages)
       expect(manager).to receive(:fetch_done).with(messages)
       expect(logger).to receive(:info).with(event_name: "sqs_worker_fetched_messages", queue: queue_name, size: messages.size)
       fetcher.fetch

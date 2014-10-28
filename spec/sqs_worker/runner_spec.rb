@@ -16,7 +16,6 @@ module SqsWorker
       let(:manager_b) { double(Manager, worker_class: worker_class_b) }
       let(:logger) { double('logger', info: nil) }
 
-
       before do
         SqsWorker.logger = logger
         expect(IO).to receive(:pipe).and_return [read_io, write_io]

@@ -64,7 +64,7 @@ module SqsWorker
     end
 
     def fetcher
-      @fetcher ||= Fetcher.pool(size: config.num_fetchers, args: [{ queue_name: config.queue_name, manager: self }])
+      @fetcher ||= Fetcher.pool(size: config.num_fetchers, args: [{ queue_name: config.queue_name, manager: self, batch_size: config.fetcher_batch_size }])
     end
 
     def deleter
