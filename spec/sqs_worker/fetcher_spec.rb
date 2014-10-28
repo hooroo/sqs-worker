@@ -9,15 +9,15 @@ module SqsWorker
     let(:batch_size) { 5 }
     let(:queue_name) { 'queue_name' }
     let(:manager) { double(Manager)}
-    let (:aws) { double(Aws, find_queue: queue) }
+    let (:sqs) { double(Sqs, find_queue: queue) }
     let (:queue) { double('queue') }
     let(:messages) { ['message'] }
     let(:logger) { double('logger', info: nil) }
 
     before do
       SqsWorker.logger = logger
-      expect(Aws).to receive(:instance).and_return(aws)
-      expect(aws).to receive(:find_queue).and_return(queue)
+      expect(Sqs).to receive(:instance).and_return(sqs)
+      expect(sqs).to receive(:find_queue).and_return(queue)
     end
 
     after do

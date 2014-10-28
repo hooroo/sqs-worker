@@ -57,7 +57,7 @@ test:
 Add an initializer to your application to load configuration and set the logger.
 
 ```ruby
-SqsWorker.configuration = YAML.load(File.read("#{Rails.root}/config/sqs.yml"))[Rails.env]
+AWS.config(YAML.load(File.read("#{Rails.root}/config/sqs.yml"))[Rails.env])
 SqsWorker.logger = Slate::Logger #  Can use any logger here
 
 ```

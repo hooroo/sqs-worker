@@ -1,11 +1,11 @@
-require 'sqs_worker/aws'
+require 'sqs_worker/sqs'
 
 module SqsWorker
   class Deleter
     include Celluloid
 
     def initialize(queue_name)
-      @queue = Aws.instance.find_queue(queue_name)
+      @queue = Sqs.instance.find_queue(queue_name)
     end
 
     def delete(messages)

@@ -6,7 +6,12 @@ module SqsWorker
 
 
     subject(:processor) { described_class.new(TestWorker) }
-    let(:message) { { foo: 'bar' } }
+    let(:message_body) { { foo: 'bar' } }
+    let(:correlation_id) { 'abc123' }
+    let(:message) do
+      double( AWS::SQS::ReceivedMessage, body: { body: message_body, message_attributes: { correlation_id: correlation_id } }.to_json)
+    end
+
     let(:worker) { double(TestWorker) }
     let(:logger) { double('logger', info: nil) }
 
@@ -31,7 +36,7 @@ module SqsWorker
         context 'when the worker does not raise an exception' do
 
           before do
-            expect(worker).to receive(:perform).with(message)
+            expect(worker).to receive(:perform).with(message_body)
           end
 
           it 'succesfully processes the worker' do
@@ -57,7 +62,7 @@ module SqsWorker
 
           before do
             SqsWorker.logger = logger
-            expect(worker).to receive(:perform).with(message).and_raise(Exception)
+            expect(worker).to receive(:perform).with(message_body).and_raise(Exception)
           end
 
           after do

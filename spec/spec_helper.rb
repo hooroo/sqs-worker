@@ -6,13 +6,13 @@ require 'pry'
 # require "codeclimate-test-reporter"
 # CodeClimate::TestReporter.start
 
-SqsWorker.configuration = {
-  use_ssl: false,
-  sqs_endpoint: "localhost",
-  sqs_port: 4568,
-  access_key_id: "fake access key",
-  secret_access_key: "fake secret key"
-}
+# AWS.config({
+#   use_ssl: false,
+#   sqs_endpoint: "localhost",
+#   sqs_port: 4568,
+#   access_key_id: "fake access key",
+#   secret_access_key: "fake secret key"
+# })
 
 
 RSpec.configure do |config|

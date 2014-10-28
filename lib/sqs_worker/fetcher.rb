@@ -1,4 +1,4 @@
-require 'sqs_worker/aws'
+require 'sqs_worker/sqs'
 
 module SqsWorker
   class Fetcher
@@ -6,7 +6,7 @@ module SqsWorker
 
     def initialize(queue_name:, manager:, batch_size:)
       @queue_name = queue_name
-      @queue = Aws.instance.find_queue(queue_name)
+      @queue = Sqs.instance.find_queue(queue_name)
       @manager = manager
       @batch_size = batch_size
     end

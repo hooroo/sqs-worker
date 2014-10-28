@@ -10,18 +10,6 @@ module SqsWorker
     Runner.run_all
   end
 
-  def self.configure
-    yield self
-  end
-
-  def self.configuration
-    @configuration
-  end
-
-  def self.configuration=(configuration)
-    @configuration = configuration
-  end
-
   def self.logger
     raise "Please specify a logger for the sqs worker gem via SqsWorker.logger = my_logger" if @logger.nil?
     @logger
