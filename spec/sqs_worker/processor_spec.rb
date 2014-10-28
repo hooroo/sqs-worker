@@ -7,9 +7,15 @@ module SqsWorker
 
     subject(:processor) { described_class.new(TestWorker) }
     let(:message_body) { { foo: 'bar' } }
+
+    let(:message_json) do
+      { body: message_body, message_attributes: { correlation_id: correlation_id } }.to_json
+    end
+
     let(:correlation_id) { 'abc123' }
+
     let(:message) do
-      double( AWS::SQS::ReceivedMessage, body: { body: message_body, message_attributes: { correlation_id: correlation_id } }.to_json)
+      double(AWS::SQS::ReceivedMessage, body: message_json)
     end
 
     let(:worker) { double(TestWorker) }
@@ -56,6 +62,19 @@ module SqsWorker
 
         end
 
+        context 'with a deeply nested message body' do
+
+          let(:message_body) { { 'foo' => 'bar', 'nested' => { 'baz' => 'boz'}, 'array' => [ { 'zip' => 'zap' } ] } }
+          let(:symbolized_message_body) { message_body.deep_symbolize_keys }
+
+          it 'passes a message for processing with symbolized keys' do
+            expect(worker).to receive(:perform).with(symbolized_message_body)
+            result = processor.process(message)
+            expect(result[:success]).to be true
+          end
+
+        end
+
         context 'when the worker raises an exception' do
 
           let(:logger) { double('logger', error: nil) }
@@ -71,9 +90,10 @@ module SqsWorker
 
           it 'logs the exception' do
             expect(logger).to receive(:error).with({
-              event_name: :sqs_worker_error,
+              event_name: :sqs_worker_processor_error,
               worker_class: TestWorker.name,
               error_class: Exception.name,
+              exception: Exception,
               backtrace: Array
             })
             processor.process(message)

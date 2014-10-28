@@ -1,3 +1,4 @@
+require 'active_support/core_ext/hash/keys'
 require 'sqs_worker/signal_handler'
 require 'json'
 
@@ -44,32 +45,18 @@ module SqsWorker
 
     def log_exception(exception)
       SqsWorker.logger.error({
-        event_name: :sqs_worker_error,
+        event_name: :sqs_worker_processor_error,
         worker_class: worker_class.name,
         error_class: exception.class.name,
+        exception: exception,
         backtrace: exception.backtrace
       })
     end
 
     #make messages look like they would with sdk v2.x
     def parse_message(message)
-      parsed_message = symbolize_keys(JSON.parse(message.body))
+      parsed_message = JSON.parse(message.body).deep_symbolize_keys
       OpenStruct.new(body: parsed_message[:body], message_attributes: parsed_message[:message_attributes])
-    end
-
-    def symbolize_keys(hash)
-      hash.inject({}) do |result, (key, value)|
-        new_key = case key
-              when String then key.to_sym
-              else key
-              end
-        new_value = case value
-                    when Hash then symbolize_keys(value)
-                    else value
-                    end
-        result[new_key] = new_value
-        result
-      end
     end
 
   end
