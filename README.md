@@ -85,13 +85,16 @@ As long as the workers and their file names are named using ruby naming conventi
 
 ### Configuring the number of worker processors
 
-Each worker can be configured with how many 'processors' are run in parallel.
+Each worker can be configured with how many 'processors' are run in 'parallel'.
 
 ```ruby
 configure queue_name: "things-to-do", processors: 25
 ```
 
-The default number of processors per worker is 20.  At this point there is no optimisation around the number of processors per worker for a given instance, so as worker classes are added to a given application, this number may need tweaking.  Longer term we may want to centralise the management of how many processors are assigned to each worker based on all the workers in the app and the resources available.
+The default number of processors per worker is 10.  The number of processors is directly tied to how many messages are fetched off an SQS queue in a single request.  The formula for this is `[(num_processors / 2).to_int), 10].min`. This ensures that the the amazon sdk limit is never exceeded but decent parallelization is achieved.
+
+
+At this point there is no optimisation around the number of processors per worker for a given instance, so as worker classes are added to an application, this number may need tweaking.  Longer term we may want to centralise the management of how many processors are assigned to each worker based on all the workers in the app and the resources available.
 
 On MRI, the more IO that occurrs with fetching and processing messages, the more opportunity for parallelisation of the workers.
 
