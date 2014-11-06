@@ -98,4 +98,10 @@ At this point there is no optimisation around the number of processors per worke
 
 On MRI, the more IO that occurrs with fetching and processing messages, the more opportunity for parallelisation of the workers.
 
+### Running workers
+
+Executing `rails r SqsWorker.run_all` will start rails, find all workers and start processing messages on configured queues.
+
+While the sqs_worker gem will do what it can to restart dead workers and generally manage it's own health, if the rails process dies you will need something such as Monit to detect this and restart the process.
+
 
