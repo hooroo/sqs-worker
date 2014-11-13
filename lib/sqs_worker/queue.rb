@@ -3,20 +3,21 @@ require 'delegate'
 module SqsWorker
   class Queue < SimpleDelegator
 
-    def initialize(queue)
+    def initialize(queue, name)
       super(queue)
       @queue = queue
+      @name = name
     end
 
     def send_message(message)
       @queue.send_message(with_message_attributes(message))
-      Slate::Logger.info(event_name: 'sqs_worker_sent_message')
+      Slate::Logger.info(event_name: 'sqs_worker_sent_message', queue_name: name)
     end
 
 
     private
 
-    attr_reader :queue
+    attr_reader :queue, :name
 
     #Simulate the SQS message body / attribtues that will be available in v2 of the sdk
     def with_message_attributes(message)

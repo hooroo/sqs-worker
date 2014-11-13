@@ -13,7 +13,7 @@ module SqsWorker
     end
 
     def find_queue(queue_name)
-      Queue.new(sqs.queues.named(queue_name.to_s))
+      Queue.new(sqs.queues.named(queue_name.to_s), queue_name.to_s)
     end
 
     private
