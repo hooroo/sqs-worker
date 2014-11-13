@@ -19,11 +19,16 @@ module SqsWorker
       result = true
 
       begin
+
+        log_event("sqs_worker_received_message")
+
         parsed_message = parse_message(message)
 
         store_correlation_id(parsed_message)
         worker_class.new.perform(parsed_message.body)
-        SqsWorker.logger.info(event_name: "sqs_worker_processed_message", type: worker_class)
+
+        log_event("sqs_worker_processed_message")
+
       rescue Exception => exception
         log_exception(exception)
         result = false
@@ -51,6 +56,10 @@ module SqsWorker
         exception: exception,
         backtrace: exception.backtrace
       })
+    end
+
+    def log_event(event_name)
+      SqsWorker.logger.info(event_name: event_name, type: worker_class, queue_name: worker_class.configuration.queue_name)
     end
 
     #make messages look like they would with sdk v2.x

@@ -11,7 +11,7 @@ module SqsWorker
 
     def send_message(message)
       @queue.send_message(with_message_attributes(message))
-      Slate::Logger.info(event_name: 'sqs_worker_sent_message', queue_name: name)
+      SqsWorker.logger.info(event_name: 'sqs_worker_sent_message', queue_name: name)
     end
 
 
