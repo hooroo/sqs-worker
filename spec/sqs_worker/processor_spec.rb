@@ -96,6 +96,7 @@ module SqsWorker
           it 'logs the exception' do
             expect(logger).to receive(:error).with({
               event_name: :sqs_worker_processor_error,
+              queue_name: TestWorker.configuration.queue_name,
               worker_class: TestWorker.name,
               error_class: Exception.name,
               exception: Exception,

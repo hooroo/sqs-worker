@@ -51,6 +51,7 @@ module SqsWorker
     def log_exception(exception)
       SqsWorker.logger.error({
         event_name: :sqs_worker_processor_error,
+        queue_name: worker_class.configuration.queue_name,
         worker_class: worker_class.name,
         error_class: exception.class.name,
         exception: exception,
