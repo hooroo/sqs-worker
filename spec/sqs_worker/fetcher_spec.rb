@@ -27,7 +27,7 @@ module SqsWorker
     it 'fetches messages from the queue and passes to manager' do
       expect(queue).to receive(:receive_message).with({ :limit => batch_size, :attributes => [:receive_count] }).and_return(messages)
       expect(manager).to receive(:fetch_done).with(messages)
-      expect(logger).to receive(:info).with(event_name: "sqs_worker_fetched_messages", queue: queue_name, size: messages.size)
+      expect(logger).to receive(:info).with(event_name: "sqs_worker_fetched_messages", queue_name: queue_name, size: messages.size)
       fetcher.fetch
     end
 
