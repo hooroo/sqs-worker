@@ -51,12 +51,12 @@ module SqsWorker
           end
 
           it 'logs the receipt of message' do
-            expect(logger).to receive(:info).with(event_name: "sqs_worker_received_message", type: TestWorker, queue_name: TestWorker.configuration.queue_name)
+            expect(logger).to receive(:info).with(event_name: "sqs_worker_received_message", type: TestWorker, queue_name: TestWorker.config.queue_name)
             processor.process(message)
           end
 
           it 'logs the processing of message' do
-            expect(logger).to receive(:info).with(event_name: "sqs_worker_processed_message", type: TestWorker, queue_name: TestWorker.configuration.queue_name)
+            expect(logger).to receive(:info).with(event_name: "sqs_worker_processed_message", type: TestWorker, queue_name: TestWorker.config.queue_name)
             processor.process(message)
           end
 
@@ -96,7 +96,7 @@ module SqsWorker
           it 'logs the exception' do
             expect(logger).to receive(:error).with({
               event_name: :sqs_worker_processor_error,
-              queue_name: TestWorker.configuration.queue_name,
+              queue_name: TestWorker.config.queue_name,
               worker_class: TestWorker.name,
               error_class: Exception.name,
               exception: Exception,
@@ -151,7 +151,7 @@ class TestWorker
 
   end
 
-  def self.configuration
+  def self.config
     OpenStruct.new(queue_name: 'queue_name')
   end
 end

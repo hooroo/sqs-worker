@@ -51,7 +51,7 @@ module SqsWorker
     def log_exception(exception)
       SqsWorker.logger.error({
         event_name: :sqs_worker_processor_error,
-        queue_name: worker_class.configuration.queue_name,
+        queue_name: worker_class.config.queue_name,
         worker_class: worker_class.name,
         error_class: exception.class.name,
         exception: exception,
@@ -60,7 +60,7 @@ module SqsWorker
     end
 
     def log_event(event_name)
-      SqsWorker.logger.info(event_name: event_name, type: worker_class, queue_name: worker_class.configuration.queue_name)
+      SqsWorker.logger.info(event_name: event_name, type: worker_class, queue_name: worker_class.config.queue_name)
     end
 
     #make messages look like they would with sdk v2.x
