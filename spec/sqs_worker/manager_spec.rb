@@ -57,7 +57,7 @@ module SqsWorker
         end
 
         it 'logs start' do
-          expect(logger).to receive(:info).with(event_name: "sqs_worker_starting_manager", type: worker_class)
+          expect(logger).to receive(:info).with(event_name: "sqs_worker_starting_manager", type: worker_class, queue_name: worker_class.config.queue_name)
           manager.start
         end
       end
@@ -157,4 +157,10 @@ module SqsWorker
   end
 end
 
-class StubWorker; end
+class StubWorker
+
+  def self.config
+    OpenStruct.new(queue_name: 'queue_name')
+  end
+
+end

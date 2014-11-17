@@ -23,7 +23,7 @@ module SqsWorker
     end
 
     def start
-      logger.info(event_name: "sqs_worker_starting_manager", type: worker_class)
+      logger.info(event_name: "sqs_worker_starting_manager", type: worker_class, queue_name: worker_class.config.queue_name)
       fetch_messages(fetcher.size)
     end
 
