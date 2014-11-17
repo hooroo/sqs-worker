@@ -148,7 +148,7 @@ module SqsWorker
       it "sends a signal to itself, batcher and processor" do
         expect(batcher_pool).to receive(:publish).with('SIGTERM')
         expect(processor_pool).to receive(:publish).with('SIGTERM')
-        expect(logger).to receive(:info).with(event_name: "sqs_worker_prepare_for_shutdown", type: worker_class)
+        expect(logger).to receive(:info).with(event_name: "sqs_worker_prepare_for_shutdown", type: worker_class, queue_name: worker_class.config.queue_name)
         manager.prepare_for_shutdown
         expect(manager.shutting_down?).to be true
       end
