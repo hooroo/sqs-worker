@@ -20,11 +20,11 @@ module SqsWorker
 
       begin
 
+        parsed_message = parse_message(message)
+        store_correlation_id(parsed_message)
+
         log_event("sqs_worker_received_message")
 
-        parsed_message = parse_message(message)
-
-        store_correlation_id(parsed_message)
         worker_class.new.perform(parsed_message.body)
 
         log_event("sqs_worker_processed_message")
