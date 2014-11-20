@@ -62,9 +62,22 @@ SqsWorker.logger = Slate::Logger #  Can use any logger here
 
 ```
 
-### Adding Workers
+### Sending messages via Queues
 
-Adding workers for processing SQS messages is simple as creating workers in the `app/workers' folder.
+Queues are referenced via the lightweight SQS sdk wrapper:
+
+`my_queue = Sqs.find_queue('my_queue')`
+
+Messages can then be placed on the queue:
+
+`my_queue.send_message({ foo: 'bar' })`
+
+Currently only json can be placed on the queue and should be supplied as a ruby hash.
+
+
+### Processing messages on Queues via Workers
+
+Workers are used for processing SQS messages from a specific queue. Workers should be added to the `app/workers' folder and be named with a suffix of `_worker.rb` so that they can be automcatically picked up by the worker manager ready to process messages.
 
 Eg: A worker named `app/workers/things_to_do_worker.rb'.
 
