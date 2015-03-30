@@ -1,5 +1,6 @@
 require 'sqs_worker/signal_handler'
 require 'sqs_worker/worker_config'
+require 'sqs_worker/error_handlers'
 require 'sqs_worker/fetcher'
 require 'sqs_worker/processor'
 require 'sqs_worker/deleter'

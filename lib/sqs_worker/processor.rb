@@ -31,6 +31,7 @@ module SqsWorker
 
       rescue Exception => exception
         log_exception(exception)
+        fire_error_handlers(exception)
         result = false
       ensure
         ::ActiveRecord::Base.clear_active_connections! if defined?(::ActiveRecord)
@@ -46,6 +47,12 @@ module SqsWorker
 
     def store_correlation_id(message)
       Thread.current[:correlation_id] = message.message_attributes[:correlation_id]
+    end
+
+    def fire_error_handlers(exception)
+      worker_class.config.error_handlers.each do |handler|
+        handler.call(exception, worker_class) rescue nil
+      end if worker_class.config.error_handlers
     end
 
     def log_exception(exception)

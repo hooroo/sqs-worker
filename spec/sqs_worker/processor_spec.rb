@@ -37,6 +37,22 @@ module SqsWorker
         allow(TestWorker).to receive(:new).and_return(worker)
       end
 
+      context 'when raising an exception' do
+        let(:error_handler) { Proc.new { |e| } }
+        let(:config) { OpenStruct.new(queue_name: 'queue_name', error_handlers: [error_handler]) }
+
+        before do
+          expect(worker).to receive(:perform).with(message_body).and_raise('Exception')
+          allow(TestWorker).to receive(:config).and_return(config)
+        end
+
+        it 'alerts all registered error handlers' do
+          expect(logger).to receive(:error)
+          expect(error_handler).to receive(:call)
+          result = processor.process(message)
+        end
+      end
+
       context 'when not shutting down' do
 
         context 'when the worker does not raise an exception' do
