@@ -1,3 +1,4 @@
+require 'sqs_worker/error_handler_registry'
 
 module SqsWorker
   class WorkerConfig
@@ -6,7 +7,6 @@ module SqsWorker
     MIN_POOL_SIZE = 2
     DEFAULT_EMPTY_QUEUE_THROTTLE = 2
     MAX_FETCH_BATCH_SIZE = 10
-    DEFAULT_ERROR_HANDLERS = []
 
     attr_reader :num_processors, :num_fetchers, :num_batchers, :num_deleters, :fetcher_batch_size, :queue_name, :empty_queue_throttle, :error_handlers
 
@@ -22,7 +22,12 @@ module SqsWorker
       @queue_name = config[:queue_name]
       @empty_queue_throttle = config[:empty_queue_throttle] || DEFAULT_EMPTY_QUEUE_THROTTLE
       @fetcher_batch_size = [(@num_processors / @num_fetchers).to_i, MAX_FETCH_BATCH_SIZE].min
-      @error_handlers = Array(config[:error_handlers]) || DEFAULT_ERROR_HANDLERS
+
+      @error_handlers = if config[:error_handlers]
+        ErrorHandlerRegistry.error_handlers.join(config[:error_handlers])
+      else
+        ErrorHandlerRegistry.error_handlers
+      end
     end
 
   end
