@@ -4,6 +4,13 @@ require "sqs_worker/runner"
 require 'sqs_worker/worker'
 
 module SqsWorker
+  class Configuration
+    def initialize
+      @worker_classes = []
+    end
+
+    attr_reader :worker_classes
+  end
 
   def self.run_all
     require 'celluloid/autostart'
@@ -17,6 +24,14 @@ module SqsWorker
 
   def self.logger=(logger)
     @logger = logger
+  end
+
+  def self.configure
+    yield(config)
+  end
+
+  def self.config
+    @config ||= Configuration.new
   end
 
 end

@@ -6,15 +6,12 @@ module SqsWorker
 
     def resolve_worker_classes
 
-      WorkerFileLocator.locate.inject([]) do |workers, file_name|
-        worker_class = file_name.gsub('.rb','').camelize.constantize
-
-        if worker_class.ancestors.include?(SqsWorker::Worker)
-          workers << worker_class
-        end
-
-        workers
+      workers = WorkerFileLocator.locate.map do |file_name|
+        file_name.gsub('.rb','').camelize.constantize
       end
+
+      workers += SqsWorker.config.worker_classes
+      workers.select { |worker| worker.ancestors.include?(SqsWorker::Worker) }
     end
 
   end

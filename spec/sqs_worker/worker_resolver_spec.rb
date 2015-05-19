@@ -1,15 +1,16 @@
 require 'spec_helper'
 require 'sqs_worker/worker_resolver'
 
-class FirstTestWorker
+class LocatedTestWorker
   include SqsWorker::Worker
 end
 
-class SecondTestWorker
+class ConfiguredTestWorker
   include SqsWorker::Worker
 end
 
-class IgnoredTestWorker; end
+class IgnoredLocatedTestWorker; end
+class IgnoredConfiguredTestWorker; end
 
 module SqsWorker
 
@@ -17,44 +18,29 @@ module SqsWorker
 
     describe '#resolve_worker_classes' do
 
+      let(:resolved_classes) { subject.resolve_worker_classes }
+
       before do
         allow(WorkerFileLocator).to receive(:locate).and_return(
-          %w(first_test_worker.rb second_test_worker.rb ignored_test_worker.rb)
+          %w(located_test_worker.rb ignored_located_test_worker.rb)
+        )
+        allow(SqsWorker.config).to receive(:worker_classes).and_return(
+          [ConfiguredTestWorker, IgnoredConfiguredTestWorker]
         )
       end
 
+      it 'includes workers defined in the located worker files' do
+        expect(resolved_classes).to include(LocatedTestWorker)
+      end
+
+      it 'includes the workers added via configuration' do
+        expect(resolved_classes).to include(ConfiguredTestWorker)
+      end
+
       it 'only includes worker classes that are actual workers' do
-        expect(subject.resolve_worker_classes).to eq([FirstTestWorker, SecondTestWorker])
+        expect(resolved_classes).to_not include(IgnoredLocatedTestWorker)
+        expect(resolved_classes).to_not include(IgnoredConfiguredTestWorker)
       end
     end
   end
 end
-
-# module SqsWorker
-
-#   class WorkerFileLocator
-#     def locate
-#       Dir.entries(Rails.root.join('app', 'workers')).select do |file_name|
-#         file_name.end_with?('worker.rb')
-#       end.reverse
-#     end
-#   end
-
-#   class WorkerResolver
-
-#     def resolve_worker_classes
-
-#       WorkerFileLocator.locate.inject([]) do |workers, file_name|
-
-#         worker_class = file_name.gsub('.rb','').camelize.constantize
-
-#         if worker_class.ancestors.include?(SqsWorker::Worker)
-#           workers << worker_class
-#         end
-
-#         workers
-#       end
-#     end
-
-#   end
-# end

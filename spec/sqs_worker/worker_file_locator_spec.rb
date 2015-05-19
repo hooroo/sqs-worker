@@ -7,7 +7,7 @@ module SqsWorker
 
   describe WorkerFileLocator do
 
-    describe '#self.locate' do
+    describe '.locate' do
 
       let(:located_files) { described_class.locate }
 
