@@ -26,7 +26,7 @@ module SqsWorker
           correlation_id: correlation_id
         },
         body: parse_message(message)
-      }.as_json.to_json
+      }.to_json
     end
 
     def correlation_id
