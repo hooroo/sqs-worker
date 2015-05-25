@@ -66,7 +66,7 @@ SqsWorker.logger = Slate::Logger #  Can use any logger here
 
 Queues are referenced via the lightweight SQS sdk wrapper:
 
-`my_queue = Sqs.find_queue('my_queue')`
+`my_queue = SqsWorker::Sqs.instance.find_queue('my_queue')`
 
 Messages can then be placed on the queue:
 
