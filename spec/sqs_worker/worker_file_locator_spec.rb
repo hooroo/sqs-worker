@@ -12,7 +12,9 @@ module SqsWorker
       let(:located_files) { described_class.locate }
 
       before do
-        allow(Rails).to receive(:root).and_return(Pathname.new('rails_root'))
+        SqsWorker.configure do |c|
+          c.application_root = 'application_path'
+        end
         allow(Dir).to receive(:entries).and_return(
           %w(first_test_worker.rb second_test_worker.rb invalid.rb)
         )
@@ -20,7 +22,7 @@ module SqsWorker
 
       it 'looks for workers under the app/workers within the Rails root' do
         located_files
-        expect(Dir).to have_received(:entries).with(Pathname.new('rails_root/app/workers'))
+        expect(Dir).to have_received(:entries).with('application_path/app/workers')
       end
 
       it "only includes files that end with 'worker.rb'" do

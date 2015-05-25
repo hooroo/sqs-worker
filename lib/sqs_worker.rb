@@ -10,6 +10,7 @@ module SqsWorker
     end
 
     attr_reader :worker_classes
+    attr_accessor :application_root
   end
 
   def self.run_all

@@ -12,7 +12,7 @@ describe SqsWorker do
       end
     end
 
-    it 'allows worker classes to be configured' do
+    it 'allows SqsWorker to be configured' do
       expect(SqsWorker.config.worker_classes).to eq([MyTestWorker])
     end
   end
