@@ -1,4 +1,5 @@
 require 'active_support/core_ext/string'
+require_relative 'worker_file_locator'
 
 module SqsWorker
 
