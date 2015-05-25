@@ -17,6 +17,10 @@ module SqsWorker
     def self.included(base)
       base.send(:extend, ClassMethods)
     end
+
+    def config
+      self.class.config
+    end
   end
 end
 

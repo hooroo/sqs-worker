@@ -28,6 +28,12 @@ module SqsWorker
     end
   end
 
+  describe '#config' do
+    it 'returns the class configuration' do
+      expect(ClassConfiguredWorker.new.config.queue_name).to eq('class_configured_queue')
+    end
+  end
+
   class ClassConfiguredWorker
     include Worker
     configure queue_name: 'class_configured_queue'
