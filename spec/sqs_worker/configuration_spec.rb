@@ -17,15 +17,24 @@ module SqsWorker
         end
       end
 
-      context 'application root' do
-        let(:application_root) { '/path/to/application' }
+      context 'worker root' do
 
-        before do
-          subject.application_root = application_root
+        context 'when a worker root is configured' do
+          let(:worker_root) { '/path/to/workers' }
+
+          before do
+            subject.worker_root = worker_root
+          end
+
+          it 'is the given worker root' do
+            expect(subject.worker_root).to eq(worker_root)
+          end
         end
 
-        it 'allows the application root to be configured' do
-          expect(subject.application_root).to eq(application_root)
+        context 'when no worker root is configured' do
+          it 'is app/workers' do
+            expect(subject.worker_root).to eq('app/workers')
+          end
         end
       end
 
