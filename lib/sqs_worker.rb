@@ -1,17 +1,10 @@
 require 'celluloid'
-require "sqs_worker/version"
-require "sqs_worker/runner"
+require 'sqs_worker/version'
+require 'sqs_worker/runner'
 require 'sqs_worker/worker'
+require 'sqs_worker/configuration'
 
 module SqsWorker
-  class Configuration
-    def initialize
-      @worker_classes = []
-    end
-
-    attr_reader :worker_classes
-    attr_accessor :application_root
-  end
 
   def self.run_all
     require 'celluloid/autostart'

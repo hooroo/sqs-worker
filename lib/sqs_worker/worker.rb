@@ -5,14 +5,17 @@ module SqsWorker
     module ClassMethods
 
       def configure(configuration)
-        self.config = WorkerConfig.new(configuration)
+        @config = WorkerConfig.new(configuration)
+      end
+
+      def config
+        @config || SqsWorker.config.worker_configurations[self]
       end
 
     end
 
     def self.included(base)
       base.send(:extend, ClassMethods)
-      base.class_attribute(:config)
     end
   end
 end
