@@ -1,5 +1,6 @@
 require 'gem_publisher'
 require 'rspec/core/rake_task'
-task :default => :spec
+task ci: :spec
+task default: :ci
 RSpec::Core::RakeTask.new
 
