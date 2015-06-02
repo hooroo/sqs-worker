@@ -5,9 +5,9 @@ require 'sqs_worker/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "sqs_worker"
-  pre_release = ENV['PRE_RELEASE_VERSION']
+  pre_release = ENV['PRE_RELEASE_VERSION'].to_s
 
-  spec.version       = pre_release ? "#{SqsWorker::VERSION}-#{pre_release}" : SqsWorker::VERSION
+  spec.version       = pre_release.empty? ? SqsWorker::VERSION : "#{SqsWorker::VERSION}-#{pre_release}"
   spec.authors       = ["Rob Monie"]
   spec.email         = ["robmonie@gmail.com"]
   spec.summary       = %q{Runtime for SQS workers}
