@@ -1,13 +1,13 @@
 require 'spec_helper'
-require 'sqs_worker/queue'
+require 'sqs_worker/topic'
 
 module SqsWorker
-  describe Queue do
+  describe Topic do
 
-    subject { described_class.new(queue, queue_name, message_factory: message_factory) }
+    subject { described_class.new(topic, message_factory: message_factory) }
 
-    let(:queue) { instance_double(AWS::SQS::Queue, send_message: nil) }
-    let(:queue_name) { 'queue_name' }
+    let(:topic) { instance_double(AWS::SNS::Topic, publish: nil, name: topic_name) }
+    let(:topic_name) { 'topic_name' }
     let(:message_factory) { instance_double(MessageFactory, message: constructed_message) }
     let(:message_to_publish) { { test: "message" } }
     let(:constructed_message) { { another: "message" } }
@@ -25,11 +25,11 @@ module SqsWorker
       end
 
       it "sends the constructed message" do
-        expect(queue).to have_received(:send_message).with(constructed_message.to_json)
+        expect(topic).to have_received(:publish).with(constructed_message.to_json)
       end
 
       it "logs the event being sent" do
-        expect(logger).to have_received(:info).with(event_name: 'sqs_worker_sent_message', queue_name: queue_name)
+        expect(logger).to have_received(:info).with(event_name: 'sqs_worker_sent_message', topic_name: topic_name)
       end
     end
   end
