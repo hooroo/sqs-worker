@@ -1,6 +1,7 @@
 require 'aws-sdk'
 require 'singleton'
 require 'sqs_worker/queue'
+require 'sqs_worker/errors'
 
 module SqsWorker
   class Sqs < SimpleDelegator
@@ -14,6 +15,8 @@ module SqsWorker
 
     def find_queue(queue_name)
       Queue.new(sqs.queues.named(queue_name.to_s), queue_name.to_s)
+    rescue AWS::SQS::Errors::NonExistentQueue => e
+      raise SqsWorker::Errors::NonExistentQueue, "No queue found with name '#{queue_name}'"
     end
 
     private

@@ -6,18 +6,42 @@ module SqsWorker
 
     subject(:sqs) { described_class.clone.instance }
 
-    let(:aws_sqs) { double(AWS::SQS) }
-    let(:queues) { double('queues') }
-    let(:queue) { double('queue') }
+    let(:aws_sqs) { double(AWS::SQS, queues: queues) }
+    let(:queues) { instance_double(AWS::SQS::QueueCollection, named: queue) }
+    let(:queue) { instance_double(AWS::SQS::Queue) }
+    let(:wrapped_queue) { instance_double(Queue)}
     let(:queue_name) { 'test_queue' }
 
     describe '#find_queue' do
 
-      it "finds the queue" do
-        expect(AWS::SQS).to receive(:new).and_return(aws_sqs)
-        expect(aws_sqs).to receive(:queues).and_return(queues)
-        expect(queues).to receive(:named).with(queue_name).and_return(queue)
-        expect(sqs.find_queue(queue_name)).to eq(queue)
+      before do
+        allow(AWS::SQS).to receive(:new).and_return(aws_sqs)
+        allow(Queue).to receive(:new).and_return(wrapped_queue)
+      end
+
+      it "finds the queue using the correct queue name" do
+        sqs.find_queue(queue_name)
+        expect(queues).to have_received(:named).with(queue_name)
+      end
+
+      it "creates the queue with the sqs queue and correct queue name" do
+        sqs.find_queue(queue_name)
+        expect(Queue).to have_received(:new).with(queue, queue_name)
+      end
+
+      it "returns a wrapped queue instance" do
+        expect(sqs.find_queue(queue_name)).to be(wrapped_queue)
+      end
+
+      context "when the queue doesn't exist" do
+
+        before do
+          allow(Queue).to receive(:new).and_raise(AWS::SQS::Errors::NonExistentQueue)
+        end
+
+        it "raises an error" do
+          expect { sqs.find_queue("invalid") }.to raise_error(SqsWorker::Errors::NonExistentQueue)
+        end
       end
     end
   end

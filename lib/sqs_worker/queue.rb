@@ -1,4 +1,5 @@
 require 'delegate'
+require_relative 'message_factory'
 
 module SqsWorker
   class Queue < SimpleDelegator

@@ -1,6 +1,6 @@
 require 'celluloid/test'
 require 'sqs_worker'
-require 'pry'
+require 'byebug'
 
 
 # require "codeclimate-test-reporter"

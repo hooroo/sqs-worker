@@ -17,7 +17,7 @@ module SqsWorker
       sns.topics.each do |topic|
         return Topic.new(topic) if topic_name == topic.name
       end
-      raise SqsWorker::Errors::TopicDoesNotExistError, "No topic found with name '#{topic_name}'"
+      raise SqsWorker::Errors::NonExistentTopic, "No topic found with name '#{topic_name}'"
     end
 
     private

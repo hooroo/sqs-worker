@@ -29,7 +29,7 @@ module SqsWorker
       context "when the topic doesn't exist" do
 
         it "raises an error" do
-          expect { sns.find_topic("invalid") }.to raise_error(SqsWorker::Errors::TopicDoesNotExistError)
+          expect { sns.find_topic("invalid") }.to raise_error(SqsWorker::Errors::NonExistentTopic)
         end
       end
     end
