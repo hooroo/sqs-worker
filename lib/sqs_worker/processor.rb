@@ -1,14 +1,15 @@
 require 'active_support/core_ext/hash/keys'
 require 'sqs_worker/signal_handler'
-require 'json'
+require 'sqs_worker/message_parser'
 
 module SqsWorker
   class Processor
     include Celluloid
     include SqsWorker::SignalHandler
 
-    def initialize(worker_class)
+    def initialize(worker_class, message_parser: MessageParser.new)
       @worker_class = worker_class
+      @message_parser = message_parser
       subscribe_for_shutdown
     end
 
@@ -19,8 +20,7 @@ module SqsWorker
       result = true
 
       begin
-
-        parsed_message = parse_message(message)
+        parsed_message = message_parser.parse(message)
         store_correlation_id(parsed_message)
 
         log_event("sqs_worker_received_message")
@@ -32,17 +32,17 @@ module SqsWorker
       rescue Exception => exception
         log_exception(exception)
         result = false
+
       ensure
         ::ActiveRecord::Base.clear_active_connections! if defined?(::ActiveRecord)
       end
 
       return { success: result, message: message }
-
     end
 
     private
 
-    attr_reader :worker_class
+    attr_reader :worker_class, :message_parser
 
     def store_correlation_id(message)
       Thread.current[:correlation_id] = message.message_attributes[:correlation_id]
@@ -61,12 +61,6 @@ module SqsWorker
 
     def log_event(event_name)
       SqsWorker.logger.info(event_name: event_name, type: worker_class, queue_name: worker_class.config.queue_name)
-    end
-
-    #make messages look like they would with sdk v2.x
-    def parse_message(message)
-      parsed_message = JSON.parse(message.body).deep_symbolize_keys
-      OpenStruct.new(body: parsed_message[:body], message_attributes: parsed_message[:message_attributes])
     end
 
   end
