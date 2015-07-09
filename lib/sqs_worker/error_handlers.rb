@@ -1,7 +1,14 @@
-SqsWorker::ErrorHandlerRegistry.register(Proc.new do |exception|
-  Airbrake.notify(exception)
-end) if defined?(Airbrake)
+if defined?(Airbrake)
+  proc = Proc.new { |exception| Airbrake.notify(exception) }
+  SqsWorker::ErrorHandlerRegistry.register(proc)
+end
 
-SqsWorker::ErrorHandlerRegistry.register(Proc.new do |exception|
-  ActiveRecord::Base.clear_active_connections!
-end)if defined?(ActiveRecord)
+if defined?(Honeybadger)
+  proc = Proc.new { |exception| Honeybadger.notify(exception) }
+  SqsWorker::ErrorHandlerRegistry.register(proc)
+end
+
+if defined?(ActiveRecord)
+  proc = Proc.new { |_exception| ActiveRecord::Base.clear_active_connections! }
+  SqsWorker::ErrorHandlerRegistry.register(proc)
+end
