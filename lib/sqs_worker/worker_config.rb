@@ -1,28 +1,32 @@
+require 'sqs_worker/error_handler_registry'
+
 module SqsWorker
   class WorkerConfig
-
-    MIN_PROCESSORS = 10
-    MIN_POOL_SIZE = 2
+    MIN_PROCESSORS               = 10
+    MIN_POOL_SIZE                = 2
     DEFAULT_EMPTY_QUEUE_THROTTLE = 2
-    MAX_FETCH_BATCH_SIZE = 10
+    MAX_FETCH_BATCH_SIZE         = 10
 
-    attr_reader :num_processors, :num_fetchers, :num_batchers, :num_deleters, :fetcher_batch_size, :queue_name, :empty_queue_throttle
+    attr_reader :num_processors, :num_fetchers, :num_batchers, :num_deleters, :fetcher_batch_size, :queue_name, :empty_queue_throttle, :error_handlers
 
     def initialize(config)
-
-      raise "You must specify a queue name for all SqsWorker classes." unless config[:queue_name]
+      raise 'You must specify a queue name for all SqsWorker classes.' unless config[:queue_name]
 
       num_processors = [config[:processors].to_i, MIN_PROCESSORS].max
 
-      @num_processors = num_processors
-      @num_fetchers = MIN_POOL_SIZE
-      @num_batchers = MIN_POOL_SIZE
-      @num_deleters = MIN_POOL_SIZE
-      @queue_name = config[:queue_name]
+      @num_processors       = num_processors
+      @num_fetchers         = MIN_POOL_SIZE
+      @num_batchers         = MIN_POOL_SIZE
+      @num_deleters         = MIN_POOL_SIZE
+      @queue_name           = config[:queue_name]
       @empty_queue_throttle = config[:empty_queue_throttle] || DEFAULT_EMPTY_QUEUE_THROTTLE
-      @fetcher_batch_size = [(@num_processors / @num_fetchers).to_i, MAX_FETCH_BATCH_SIZE].min
+      @fetcher_batch_size   = [(@num_processors / @num_fetchers).to_i, MAX_FETCH_BATCH_SIZE].min
 
+      @error_handlers = if config[:error_handlers]
+        ErrorHandlerRegistry.error_handlers.join(config[:error_handlers])
+      else
+        ErrorHandlerRegistry.error_handlers
+      end
     end
-
   end
 end
