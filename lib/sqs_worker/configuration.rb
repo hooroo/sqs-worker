@@ -3,9 +3,9 @@ require 'sqs_worker/worker_config'
 module SqsWorker
   class Configuration
     def initialize
-      @worker_classes = []
+      @worker_classes        = []
       @worker_configurations = {}
-      @worker_root = 'app/workers'
+      @worker_root           = 'app/workers'
     end
 
     attr_reader :worker_classes, :worker_configurations

@@ -3,23 +3,44 @@ require 'sqs_worker/error_handler_registry'
 
 module SqsWorker
   describe ErrorHandlerRegistry do
-    subject(:registry) { described_class }
-    let(:handler) { double }
+    let(:handler) { double('Error Handler') }
 
-    before do
-      registry.register(handler)
-    end
+    subject(:registry) { described_class.clone }
 
-    describe '#register' do
-      it 'added a new error handler to the registry' do
-        expect(registry.error_handlers.member?(handler)).to be(true)
+    describe '.empty?' do
+      context 'when a handler has been added' do
+        it 'returns true' do
+          expect(subject).to be_empty
+        end
       end
 
-      it 'only once' do
+      context 'when a handler has been added' do
+        before do
+          registry.register(handler)
+        end
+
+        it 'returns false' do
+          expect(subject).to_not be_empty
+        end
+      end
+    end
+
+    describe '.register' do
+      it 'adds the given handler' do
         registry.register(handler)
-        expect(registry.error_handlers.count).to be(1)
+        expect(registry.handlers.first).to eq(handler)
+      end
+
+      context 'when the handler has already been added' do
+        before do
+          registry.register(handler)
+        end
+
+        it 'does not add it again' do
+          registry.register(handler)
+          expect(registry.handlers.to_a).to eq([handler])
+        end
       end
     end
-
   end
 end

@@ -22,11 +22,7 @@ module SqsWorker
       @empty_queue_throttle = config[:empty_queue_throttle] || DEFAULT_EMPTY_QUEUE_THROTTLE
       @fetcher_batch_size   = [(@num_processors / @num_fetchers).to_i, MAX_FETCH_BATCH_SIZE].min
 
-      @error_handlers = if config[:error_handlers]
-        ErrorHandlerRegistry.error_handlers.join(config[:error_handlers])
-      else
-        ErrorHandlerRegistry.error_handlers
-      end
+      @error_handlers = ErrorHandlerRegistry.handlers
     end
   end
 end

@@ -1,18 +1,31 @@
+require 'singleton'
+
 module SqsWorker
+  class ErrorHandlerRegistry
+    include Singleton
 
-  module ErrorHandlerRegistry
-    def register(error_handler)
-      error_handlers << error_handler unless error_handlers.member?(error_handler)
+    attr_reader :error_handlers
+
+    def initialize
+      @error_handlers = Set[]
     end
 
-    def each(&block)
-      error_handlers.each
-    end
+    class << self
+      def register(error_handler)
+        instance.error_handlers << error_handler
+      end
 
-    def error_handlers
-      @error_handlers ||= []
-    end
+      def each(&block)
+        instance.error_handlers.each(&block)
+      end
 
-    extend self
+      def handlers
+        instance.error_handlers
+      end
+
+      def empty?
+        handlers.count == 0
+      end
+    end
   end
 end

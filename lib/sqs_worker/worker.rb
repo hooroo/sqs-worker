@@ -3,7 +3,6 @@ require 'active_support/core_ext/class/attribute'
 module SqsWorker
   module Worker
     module ClassMethods
-
       def configure(configuration)
         @config = WorkerConfig.new(configuration)
       end

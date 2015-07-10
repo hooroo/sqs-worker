@@ -1,6 +1,5 @@
 require 'sqs_worker/signal_handler'
 require 'sqs_worker/worker_config'
-require 'sqs_worker/error_handlers'
 require 'sqs_worker/fetcher'
 require 'sqs_worker/processor'
 require 'sqs_worker/deleter'
@@ -15,10 +14,10 @@ module SqsWorker
 
     def initialize(worker_class)
 
-      @config = worker_class.config
+      @config               = worker_class.config
       @empty_queue_throttle = config.empty_queue_throttle
-      @worker_class = worker_class
-      @empty_queue = false
+      @worker_class         = worker_class
+      @empty_queue          = false
 
       subscribe_for_shutdown
     end
@@ -83,6 +82,5 @@ module SqsWorker
     def logger
       SqsWorker.logger
     end
-
   end
 end

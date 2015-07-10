@@ -147,8 +147,7 @@ module SqsWorker
 end
 
 module ActiveRecord
-  module Base
-    def self.clear_active_connections!
-    end
+  class Base
+    def self.clear_active_connections!; end
   end
 end

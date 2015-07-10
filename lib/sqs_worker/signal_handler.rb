@@ -16,6 +16,5 @@ module SqsWorker
     def shutting_down?
       !!@shutting_down
     end
-
   end
 end

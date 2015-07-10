@@ -8,17 +8,16 @@ module SqsWorker
     include SqsWorker::SignalHandler
 
     def initialize(worker_class, message_parser: MessageParser.new)
-      @worker_class = worker_class
+      @worker_class   = worker_class
       @message_parser = message_parser
+
       subscribe_for_shutdown
     end
 
     def process(message)
-
-      return  { success: false, message: message } if shutting_down?
+      return { success: false, message: message } if shutting_down?
 
       result = true
-
       begin
         parsed_message = message_parser.parse(message)
         store_correlation_id(parsed_message)
@@ -38,7 +37,7 @@ module SqsWorker
         ::ActiveRecord::Base.clear_active_connections! if defined?(::ActiveRecord)
       end
 
-      return { success: result, message: message }
+      { success: result, message: message }
     end
 
     private
@@ -50,25 +49,30 @@ module SqsWorker
     end
 
     def fire_error_handlers(exception)
-      worker_class.config.error_handlers.each do |handler|
-        handler.call(exception, worker_class) rescue nil
-      end if worker_class.config.error_handlers
+      if worker_class.config.error_handlers
+        worker_class.config.error_handlers.each do |handler|
+          handler.call(exception, worker_class) rescue nil
+        end
+      end
     end
 
     def log_exception(exception)
-      SqsWorker.logger.error({
-        event_name: :sqs_worker_processor_error,
-        queue_name: worker_class.config.queue_name,
-        worker_class: worker_class.name,
-        error_class: exception.class.name,
-        exception: exception,
-        backtrace: exception.backtrace
-      })
+      SqsWorker.logger.error(
+          event_name:   :sqs_worker_processor_error,
+          queue_name:   worker_class.config.queue_name,
+          worker_class: worker_class.name,
+          error_class:  exception.class.name,
+          exception:    exception,
+          backtrace:    exception.backtrace
+      )
     end
 
     def log_event(event_name)
-      SqsWorker.logger.info(event_name: event_name, type: worker_class, queue_name: worker_class.config.queue_name)
+      SqsWorker.logger.info(
+          event_name: event_name,
+          type:       worker_class,
+          queue_name: worker_class.config.queue_name
+      )
     end
-
   end
 end

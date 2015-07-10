@@ -5,14 +5,13 @@ require 'sqs_worker/worker'
 require 'sqs_worker/configuration'
 
 module SqsWorker
-
   def self.run_all
     require 'celluloid/autostart'
     Runner.run_all
   end
 
   def self.logger
-    raise "Please specify a logger for the sqs worker gem via SqsWorker.logger = my_logger" if @logger.nil?
+    raise 'Please specify a logger for the sqs worker gem via SqsWorker.logger = my_logger' if @logger.nil?
     @logger
   end
 
@@ -27,5 +26,4 @@ module SqsWorker
   def self.config
     @config ||= Configuration.new
   end
-
 end

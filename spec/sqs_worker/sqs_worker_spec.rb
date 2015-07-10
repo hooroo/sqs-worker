@@ -3,9 +3,7 @@ require 'spec_helper'
 class MyTestWorker;end
 
 describe SqsWorker do
-
   describe '.configure' do
-
     before do
       SqsWorker.configure do |c|
         c.worker_classes << MyTestWorker

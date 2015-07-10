@@ -3,16 +3,14 @@ require 'sqs_worker/worker_config'
 
 module SqsWorker
   describe WorkerConfig do
-
     subject(:worker_config) { described_class.new(config) }
 
     context 'with simple configuration' do
-
       let(:config) do
         {
-          queue_name: 'queue',
-          processors: 20,
-          empty_queue_throttle: 5
+            queue_name:           'queue',
+            processors:           20,
+            empty_queue_throttle: 5
         }
       end
 
@@ -43,16 +41,14 @@ module SqsWorker
       it 'sets the number of deleters to the optimal size' do
         expect(worker_config.num_deleters).to eq(WorkerConfig::MIN_POOL_SIZE)
       end
-
     end
 
     context 'with number of processors less than minimum' do
-
       let(:config) do
         {
-          queue_name: 'queue',
-          empty_queue_throttle: 5,
-          processors: WorkerConfig::MIN_PROCESSORS - 1
+            queue_name:           'queue',
+            empty_queue_throttle: 5,
+            processors:           WorkerConfig::MIN_PROCESSORS - 1
         }
       end
 
@@ -71,18 +67,15 @@ module SqsWorker
       it 'sets the number of deleters to the minimum pool size' do
         expect(worker_config.num_deleters).to eq(WorkerConfig::MIN_POOL_SIZE)
       end
-
     end
 
     context 'with number of processors that maxes out the fetch batch size' do
-
       let(:num_processors) { WorkerConfig::MAX_FETCH_BATCH_SIZE * WorkerConfig::MIN_POOL_SIZE + 1 }
-
       let(:config) do
         {
-          queue_name: 'queue',
-          empty_queue_throttle: 5,
-          processors: num_processors
+            queue_name:           'queue',
+            empty_queue_throttle: 5,
+            processors:           num_processors
         }
       end
 
@@ -93,14 +86,12 @@ module SqsWorker
       it 'sets the fetcher batch size to the maximum allowable size (defined by aws-sdk)' do
         expect(worker_config.fetcher_batch_size).to eq(WorkerConfig::MAX_FETCH_BATCH_SIZE)
       end
-
     end
 
     context 'with missing and defaultable configuration' do
-
       let(:config) do
         {
-          queue_name: 'queue'
+            queue_name: 'queue'
         }
       end
 
@@ -123,19 +114,14 @@ module SqsWorker
       it 'sets the emoty_queue_throttle to the default' do
         expect(worker_config.empty_queue_throttle).to eq(WorkerConfig::DEFAULT_EMPTY_QUEUE_THROTTLE)
       end
-
     end
 
     context 'without a queue name' do
-
       let(:config) { {} }
 
       it 'raises error' do
-        expect{ worker_config }.to raise_error
+        expect { worker_config }.to raise_error
       end
-
     end
-
   end
-
 end
