@@ -6,7 +6,7 @@ module SqsWorker
 
     subject(:message_parser) { described_class.new }
 
-    describe "#parse" do
+    describe '#parse' do
 
       let(:message) { instance_double(AWS::SQS::ReceivedMessage, body: json_message) }
 
@@ -41,29 +41,29 @@ module SqsWorker
         end
       end
 
-      context "with the body missing" do
+      context 'with the body missing' do
 
         let(:json_message) { { 'message_attributes' => message_attributes }.to_json }
 
-        it "raises an error" do
+        it 'raises an error' do
           expect { parsed_message }.to raise_error(SqsWorker::Errors::MessageFormat)
         end
       end
 
-      context "with the message attributes missing" do
+      context 'with the message attributes missing' do
 
         let(:json_message) { { 'body' => message_body }.to_json }
 
-        it "raises an error" do
+        it 'raises an error' do
           expect { parsed_message }.to raise_error(SqsWorker::Errors::MessageFormat)
         end
       end
 
-      context "with unparseable JSON" do
+      context 'with unparseable JSON' do
 
         let(:json_message) { 'you cannot parse me!' }
 
-        it "raises an error" do
+        it 'raises an error' do
           expect { parsed_message }.to raise_error(SqsWorker::Errors::MessageFormat)
         end
       end

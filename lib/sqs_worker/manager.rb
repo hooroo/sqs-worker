@@ -23,7 +23,7 @@ module SqsWorker
     end
 
     def start
-      logger.info(event_name: "sqs_worker_starting_manager", type: worker_class, queue_name: worker_class.config.queue_name)
+      logger.info(event_name: 'sqs_worker_starting_manager', type: worker_class, queue_name: worker_class.config.queue_name)
       fetch_messages(fetcher.size)
     end
 
@@ -48,7 +48,7 @@ module SqsWorker
     end
 
     def prepare_for_shutdown
-      SqsWorker.logger.info(event_name: "sqs_worker_prepare_for_shutdown", type: worker_class, queue_name: worker_class.config.queue_name)
+      SqsWorker.logger.info(event_name: 'sqs_worker_prepare_for_shutdown', type: worker_class, queue_name: worker_class.config.queue_name)
       self.publish('SIGTERM')
       batcher.publish('SIGTERM')
       processor.publish('SIGTERM')

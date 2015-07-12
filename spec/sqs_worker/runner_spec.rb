@@ -27,7 +27,7 @@ module SqsWorker
         SqsWorker.logger = nil
       end
 
-      it "traps signals" do
+      it 'traps signals' do
         expect(worker_resolver).to receive(:resolve_worker_classes).and_return []
 
         ['SIGTERM', 'TERM', 'SIGINT'].each do |signal|
@@ -59,8 +59,8 @@ module SqsWorker
         expect(manager_a).to receive(:running?).once.and_return(false)
         expect(manager_b).to receive(:running?).and_return(false)
 
-        expect(logger).to receive(:info).with(event_name: "sqs_worker_shutdown_complete", type: manager_a.worker_class)
-        expect(logger).to receive(:info).with(event_name: "sqs_worker_shutdown_complete", type: manager_b.worker_class)
+        expect(logger).to receive(:info).with(event_name: 'sqs_worker_shutdown_complete', type: manager_a.worker_class)
+        expect(logger).to receive(:info).with(event_name: 'sqs_worker_shutdown_complete', type: manager_b.worker_class)
 
         expect(manager_a).to receive(:terminate)
         expect(manager_b).to receive(:terminate)

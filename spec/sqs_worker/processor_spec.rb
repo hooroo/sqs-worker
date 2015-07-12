@@ -74,11 +74,11 @@ module SqsWorker
           end
 
           it 'logs the receipt of message' do
-            expect(logger).to have_received(:info).with(event_name: "sqs_worker_received_message", type: test_worker_class, queue_name: test_worker_class.config.queue_name)
+            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_received_message', type: test_worker_class, queue_name: test_worker_class.config.queue_name)
           end
 
           it 'logs the processing of message' do
-            expect(logger).to have_received(:info).with(event_name: "sqs_worker_processed_message", type: test_worker_class, queue_name: test_worker_class.config.queue_name)
+            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_processed_message', type: test_worker_class, queue_name: test_worker_class.config.queue_name)
           end
 
           it 'clears active connections on active record' do

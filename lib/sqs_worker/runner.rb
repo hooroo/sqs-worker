@@ -29,7 +29,7 @@ module SqsWorker
           end
 
           managers.each do |manager|
-            SqsWorker.logger.info(event_name: "sqs_worker_shutdown_complete", type: manager.worker_class)
+            SqsWorker.logger.info(event_name: 'sqs_worker_shutdown_complete', type: manager.worker_class)
           end
 
           managers.each(&:terminate)

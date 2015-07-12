@@ -21,12 +21,10 @@ module SqsWorker
       begin
         parsed_message = message_parser.parse(message)
         store_correlation_id(parsed_message)
-
-        log_event("sqs_worker_received_message")
+        log_event('sqs_worker_received_message')
 
         worker_class.new.perform(parsed_message.body)
-
-        log_event("sqs_worker_processed_message")
+        log_event('sqs_worker_processed_message')
 
       rescue Exception => exception
         log_exception(exception)
@@ -34,7 +32,7 @@ module SqsWorker
         result = false
 
       ensure
-        ::ActiveRecord::Base.clear_active_connections! if defined?(::ActiveRecord)
+        ActiveRecord::Base.clear_active_connections! if defined?(ActiveRecord)
       end
 
       { success: result, message: message }

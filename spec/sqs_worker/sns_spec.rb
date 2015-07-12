@@ -18,18 +18,18 @@ module SqsWorker
         allow(topics).to receive(:each).and_yield(topic)
       end
 
-      it "returns the topic with the same name" do
+      it 'returns the topic with the same name' do
         expect(sns.find_topic(topic_name).name).to eq(topic_name)
       end
 
-      it "returns a wrapped topic instance" do
+      it 'returns a wrapped topic instance' do
         expect(sns.find_topic(topic_name)).to be_a(Topic)
       end
 
       context "when the topic doesn't exist" do
 
-        it "raises an error" do
-          expect { sns.find_topic("invalid") }.to raise_error(SqsWorker::Errors::NonExistentTopic)
+        it 'raises an error' do
+          expect { sns.find_topic('invalid') }.to raise_error(SqsWorker::Errors::NonExistentTopic)
         end
       end
     end

@@ -10,7 +10,6 @@ module SqsWorker
       def config
         @config || SqsWorker.config.worker_configurations[self]
       end
-
     end
 
     def self.included(base)
