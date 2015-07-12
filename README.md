@@ -77,7 +77,7 @@ Currently only json can be placed on the queue and should be supplied as a ruby 
 
 ### Processing messages on Queues via Workers
 
-Workers are used for processing SQS messages from a specific queue. Workers should be added to the `app/workers' folder and be named with a suffix of `_worker.rb` so that they can be automcatically picked up by the worker manager ready to process messages.
+Workers are used for processing SQS messages from a specific queue. Workers should be added to the `app/workers' folder and be named with a suffix of `_worker.rb` so that they can be automatically picked up by the worker manager ready to process messages.
 
 Eg: A worker named `app/workers/things_to_do_worker.rb'.
 
@@ -109,7 +109,7 @@ The default number of processors per worker is 10.  The number of processors is 
 
 At this point there is no optimisation around the number of processors per worker for a given instance, so as worker classes are added to an application, this number may need tweaking.  Longer term we may want to centralise the management of how many processors are assigned to each worker based on all the workers in the app and the resources available.
 
-On MRI, the more IO that occurrs with fetching and processing messages, the more opportunity for parallelisation of the workers.
+On MRI, the more IO that occurs with fetching and processing messages, the more opportunity for parallelisation of the workers.
 
 ### Running workers
 

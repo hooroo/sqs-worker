@@ -9,7 +9,7 @@ module SqsWorker
       subscribe('SIGTERM', :shutting_down)
     end
 
-    def shutting_down(signal)
+    def shutting_down(_signal)
       @shutting_down = true
     end
 

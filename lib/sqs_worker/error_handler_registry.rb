@@ -29,3 +29,5 @@ module SqsWorker
     end
   end
 end
+
+require 'sqs_worker/error_handlers'

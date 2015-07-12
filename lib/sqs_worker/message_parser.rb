@@ -12,7 +12,7 @@ module SqsWorker
 
       OpenStruct.new(body: parsed_message[:body], message_attributes: parsed_message[:message_attributes])
 
-    rescue JSON::ParserError => e
+    rescue JSON::ParserError
       raise Errors::MessageFormat, 'Invalid JSON'
     end
 

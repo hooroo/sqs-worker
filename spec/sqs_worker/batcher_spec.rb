@@ -21,7 +21,7 @@ module SqsWorker
     describe '#process' do
       context 'when not shutting down' do
 
-        it 'processes messages and calls batch_done with succesfully processed messages' do
+        it 'processes messages and calls batch_done with successfully processed messages' do
 
           expect(processor).to receive(:process).with(successful_message).and_return(successful_message_future)
           expect(processor).to receive(:process).with(unsuccessful_message).and_return(unsuccessful_message_future)

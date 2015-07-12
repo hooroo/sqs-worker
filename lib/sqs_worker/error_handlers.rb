@@ -9,6 +9,6 @@ if defined?(Honeybadger)
 end
 
 if defined?(ActiveRecord)
-  proc = Proc.new { |_exception| ActiveRecord::Base.clear_active_connections! }
+  proc = Proc.new { |_| ActiveRecord::Base.clear_active_connections! }
   SqsWorker::ErrorHandlerRegistry.register(proc)
 end

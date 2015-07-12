@@ -47,7 +47,7 @@ module SqsWorker
     end
 
     def self.trap_signals(write_io)
-      ['SIGTERM', 'TERM', 'SIGINT'].each do |signal|
+      %w(SIGTERM TERM SIGINT).each do |signal|
         Signal.trap(signal) do
           write_io.puts(signal)
         end

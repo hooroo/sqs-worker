@@ -1,5 +1,4 @@
 require 'sqs_worker/error_handler_registry'
-require 'sqs_worker/error_handlers'
 
 module SqsWorker
   class WorkerConfig

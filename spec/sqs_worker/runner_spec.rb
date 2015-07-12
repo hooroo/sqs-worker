@@ -30,7 +30,7 @@ module SqsWorker
       it 'traps signals' do
         expect(worker_resolver).to receive(:resolve_worker_classes).and_return []
 
-        ['SIGTERM', 'TERM', 'SIGINT'].each do |signal|
+        %w(SIGTERM TERM SIGINT).each do |signal|
           expect(Signal).to receive(:trap).with(signal).and_yield
           expect(write_io).to receive(:puts).with(signal)
         end

@@ -1,6 +1,5 @@
 class MessageFactory
-
-  # Simulate the SQS message body / attribtues that will be available in v2 of the sdk
+  # Simulate the SQS message body / attributes that will be available in v2 of the sdk
   def message(body)
     {
       message_attributes: {
@@ -10,10 +9,7 @@ class MessageFactory
     }
   end
 
-
   private
-
-  attr_reader :body
 
   def correlation_id
     Thread.current[:correlation_id] ||= SecureRandom.uuid
@@ -26,5 +22,4 @@ class MessageFactory
       message
     end
   end
-
 end
