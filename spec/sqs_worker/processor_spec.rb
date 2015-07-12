@@ -13,7 +13,7 @@ module SqsWorker
     let(:parsed_message)  { OpenStruct.new(message_hash) }
 
     let(:worker) { instance_double(test_worker_class, perform: nil) }
-    let(:logger) { double('logger', info: nil) }
+    let(:logger) { double('logger', info: nil, error: nil) }
 
     let(:test_worker_class) do
       Class.new do
@@ -21,7 +21,7 @@ module SqsWorker
         end
 
         def self.config
-          OpenStruct.new(queue_name: 'queue_name')
+          OpenStruct.new(queue_name: 'queue_name', error_handlers: [])
         end
       end
     end
@@ -41,7 +41,7 @@ module SqsWorker
         allow(test_worker_class).to receive(:new).and_return(worker)
       end
 
-      context 'when raising an exception' do
+      context 'when an exception is raised' do
         let(:error_handler) { Proc.new { |_| } }
         let(:config)        { OpenStruct.new(queue_name: 'queue_name', error_handlers: [error_handler]) }
 
@@ -50,10 +50,16 @@ module SqsWorker
           allow(test_worker_class).to receive(:config).and_return(config)
         end
 
-        it 'alerts all registered error handlers' do
+        it 'logs the error' do
           expect(logger).to receive(:error)
+        end
+
+        it 'alerts all registered error handlers' do
           expect(error_handler).to receive(:call)
-          result = processor.process(message)
+        end
+
+        after do
+          processor.process(message)
         end
       end
 

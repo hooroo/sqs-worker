@@ -43,6 +43,20 @@ module SqsWorker
       end
     end
 
+    context 'with an error handler specified' do
+      let(:error_handler) { double('Extra Error Handler') }
+      let(:config) do
+        {
+            queue_name:     'queue',
+            error_handlers: error_handler
+        }
+      end
+
+      it 'adds the error handler to the default list' do
+        expect(worker_config.error_handlers).to include(error_handler)
+      end
+    end
+
     context 'with number of processors less than minimum' do
       let(:config) do
         {

@@ -11,8 +11,8 @@ module SqsWorker
     end
 
     class << self
-      def register(error_handler)
-        instance.error_handlers << error_handler
+      def register(error_handlers)
+        instance.error_handlers.merge(Array(error_handlers))
       end
 
       def each(&block)

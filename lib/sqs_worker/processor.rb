@@ -47,11 +47,7 @@ module SqsWorker
     end
 
     def fire_error_handlers(exception)
-      if worker_class.config.error_handlers
-        worker_class.config.error_handlers.each do |handler|
-          handler.call(exception, worker_class) rescue nil
-        end
-      end
+      worker_class.config.error_handlers.each { |handler| handler.call(exception, worker_class) }
     end
 
     def log_exception(exception)

@@ -1,4 +1,5 @@
 require 'sqs_worker/error_handler_registry'
+require 'sqs_worker/error_handlers'
 
 module SqsWorker
   class WorkerConfig
@@ -22,7 +23,7 @@ module SqsWorker
       @empty_queue_throttle = config[:empty_queue_throttle] || DEFAULT_EMPTY_QUEUE_THROTTLE
       @fetcher_batch_size   = [(@num_processors / @num_fetchers).to_i, MAX_FETCH_BATCH_SIZE].min
 
-      @error_handlers = ErrorHandlerRegistry.handlers
+      @error_handlers = ErrorHandlerRegistry.register(config[:error_handlers])
     end
   end
 end
