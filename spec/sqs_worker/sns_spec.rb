@@ -7,15 +7,15 @@ module SqsWorker
     subject(:sns) { described_class.clone.instance }
 
     let(:aws_sns) { double(AWS::SNS, topics: topics) }
-    let(:topics) { instance_double(AWS::SNS::TopicCollection ) }
+    let(:topics) { [topic, other_topic] }
     let(:topic) { instance_double(AWS::SNS::Topic, name: topic_name) }
+    let(:other_topic) { instance_double(AWS::SNS::Topic, name: 'other_topic') }
     let(:topic_name) { 'test_topic' }
 
     describe '#find_topic' do
 
       before do
         allow(AWS::SNS).to receive(:new).and_return(aws_sns)
-        allow(topics).to receive(:each).and_yield(topic)
       end
 
       it "returns the topic with the same name" do
@@ -28,8 +28,20 @@ module SqsWorker
 
       context "when the topic doesn't exist" do
 
-        it "raises an error" do
-          expect { sns.find_topic("invalid") }.to raise_error(SqsWorker::Errors::NonExistentTopic)
+        describe 'the raised error' do
+          let(:find_invalid) { sns.find_topic('invalid') }
+
+          it 'is a non-existent topic error' do
+            expect { find_invalid }.to raise_error(SqsWorker::Errors::NonExistentTopic)
+          end
+
+          it 'includes the topic name in the message' do
+            expect { find_invalid }.to raise_error(/invalid/)
+          end
+
+          it 'includes the names of the topics that were found in the message' do
+            expect { find_invalid }.to raise_error(/test_topic, other_topic/)
+          end
         end
       end
     end
