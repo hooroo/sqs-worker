@@ -4,9 +4,11 @@ require 'sqs_worker/topic'
 module SqsWorker
   describe Topic do
 
-    subject { described_class.new(topic, message_factory: message_factory) }
+    subject(:wrapped_topic) { described_class.new(topic, message_factory: message_factory) }
 
-    let(:topic) { instance_double(AWS::SNS::Topic, publish: nil, name: topic_name) }
+    let(:topic) do
+      instance_double(Aws::SNS::Topic, publish: nil, attributes: { 'DisplayName' => topic_name})
+    end
     let(:topic_name) { 'topic_name' }
     let(:message_factory) { instance_double(MessageFactory, message: constructed_message) }
     let(:message_to_publish) { { test: "message" } }
@@ -20,16 +22,24 @@ module SqsWorker
 
     describe "#send_message" do
 
-      it "uses the message factory to construct a message" do
-        expect(message_factory).to have_received(:message).with(message_to_publish)
+      it "uses the message factory to construct a message from the given message JSON" do
+        expect(message_factory).to have_received(:message).with(
+          message: message_to_publish.to_json
+        )
       end
 
       it "sends the constructed message" do
-        expect(topic).to have_received(:publish).with(constructed_message.to_json)
+        expect(topic).to have_received(:publish).with(constructed_message)
       end
 
-      it "logs the event being sent" do
+      it "logs the event being sent along with the topic display name" do
         expect(logger).to have_received(:info).with(event_name: 'sqs_worker_sent_message', topic_name: topic_name)
+      end
+    end
+
+    describe '#name' do
+      it 'is the topic display name' do
+        expect(wrapped_topic.name).to eq(topic_name)
       end
     end
   end

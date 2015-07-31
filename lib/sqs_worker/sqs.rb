@@ -9,19 +9,20 @@ module SqsWorker
     include Singleton
 
     def initialize
-      @sqs = ::AWS::SQS.new
+      @sqs_client = Aws::SQS::Client.new
       super(@sqs)
     end
 
     def find_queue(queue_name)
-      Queue.new(sqs.queues.named(queue_name.to_s), queue_name.to_s)
-    rescue AWS::SQS::Errors::NonExistentQueue => e
+      url = sqs_client.get_queue_url(queue_name: queue_name).queue_url
+      Queue.new(sqs_client, url, queue_name.to_s)
+    rescue Aws::SQS::Errors::QueueDoesNotExist => e
       raise SqsWorker::Errors::NonExistentQueue, "No queue found with name '#{queue_name}'"
     end
 
     private
 
-    attr_reader :sqs
+    attr_reader :sqs_client
 
   end
 
