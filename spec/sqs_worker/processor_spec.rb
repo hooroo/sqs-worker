@@ -12,7 +12,7 @@ module SqsWorker
 
     let(:correlation_id) { 'abc123' }
 
-    let(:message) { instance_double(Aws::SQS::Types::Message) }
+    let(:message) { instance_double(AWS::SQS::ReceivedMessage) }
     let(:parsed_message) { OpenStruct.new(message_hash) }
 
     let(:worker) { instance_double(test_worker_class, perform: nil) }

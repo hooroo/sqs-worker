@@ -11,13 +11,10 @@ module SqsWorker
     end
 
     def send_message(message_body)
-      @topic.publish(message_factory.message(message: message_body.to_json))
-      SqsWorker.logger.info(event_name: 'sqs_worker_sent_message', topic_name: name)
+      @topic.publish(message_factory.message(message_body).to_json)
+      SqsWorker.logger.info(event_name: 'sqs_worker_sent_message', topic_name: topic.name)
     end
 
-    def name
-      topic.attributes['DisplayName']
-    end
 
     private
 

@@ -8,7 +8,7 @@ module SqsWorker
 
     describe "#parse" do
 
-      let(:message) { instance_double(Aws::SQS::Types::Message, body: json_message) }
+      let(:message) { instance_double(AWS::SQS::ReceivedMessage, body: json_message) }
 
       let(:message_body) { { 'foo' => 'bar', 'nested' => { 'baz' => 'boz'}, 'array' => [ { 'zip' => 'zap' } ] } }
       let(:message_attributes) { { 'correlation_id' => 'some_id' } }

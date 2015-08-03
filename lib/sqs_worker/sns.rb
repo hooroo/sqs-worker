@@ -9,16 +9,15 @@ module SqsWorker
     include Singleton
 
     def initialize
-      @sns = ::Aws::SNS.new
+      @sns = ::AWS::SNS.new
       super(@sns)
     end
 
     def find_topic(topic_name)
       sns.topics.each do |topic|
-        return Topic.new(topic) if topic_name == topic.attributes['DisplayName']
+        return Topic.new(topic) if topic_name == topic.name
       end
-      found_topic_names = sns.topics.map{ |topic| topic.attributes['DisplayName'] }.join(', ')
-      raise SqsWorker::Errors::NonExistentTopic, "No topic found with name '#{topic_name}', found these topics: #{found_topic_names}"
+      raise SqsWorker::Errors::NonExistentTopic, "No topic found with name '#{topic_name}', found these topics: #{sns.topics.map(&:name).join(', ')}"
     end
 
     private
