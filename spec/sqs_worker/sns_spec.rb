@@ -6,32 +6,48 @@ module SqsWorker
 
     subject(:sns) { described_class.clone.instance }
 
-    let(:aws_sns) { double(Aws::SNS, topics: topics) }
-    let(:topics) { [topic, other_topic] }
-    let(:topic) { instance_double(Aws::SNS::Topic, attributes: {'DisplayName' => topic_name}) }
-    let(:other_topic) do
-      instance_double(Aws::SNS::Topic, attributes: {'DisplayName' => 'other_topic'})
+    let(:sns_client) { double(Aws::SNS::Client, list_topics: topics) }
+    let(:topics) { [listed_topic, other_listed_topic] }
+    let(:topic_arn) { "some:arn:#{topic_name}" }
+    let(:listed_topic) do
+      instance_double(Aws::SNS::Types::Topic, topic_arn: topic_arn)
     end
+    let(:other_listed_topic) do
+      instance_double(Aws::SNS::Types::Topic, topic_arn: 'some:arn:other_topic')
+    end
+
     let(:wrapped_topic) { instance_double(Topic) }
     let(:topic_name) { 'test_topic' }
 
     let(:found_topic) { sns.find_topic(found_topic_name) }
     let(:found_topic_name) { topic_name }
+    let(:aws_topic) { instance_double(Aws::SNS::Topic) }
 
     describe '#find_topic' do
 
       before do
-        allow(Aws::SNS).to receive(:new).and_return(aws_sns)
+        allow(Aws::SNS::Client).to receive(:new).and_return(sns_client)
+        allow(Aws::SNS::Topic).to receive(:new).and_return(aws_topic)
         allow(Topic).to receive(:new).and_return(wrapped_topic)
       end
 
-      it 'wraps the topic in a new Topic' do
-        found_topic
-        expect(Topic).to have_received(:new).with(topic)
-      end
+      context 'when the topic exists' do
+        before { found_topic }
 
-      it "returns the wrapped topic instance" do
-        expect(found_topic).to be(wrapped_topic)
+        it 'creates a new AWS topic with the found ARN and client' do
+          expect(Aws::SNS::Topic).to have_received(:new).with(
+            arn: topic_arn,
+            client: sns_client
+          )
+        end
+
+        it 'wraps the AWS topic in a new Topic' do
+          expect(Topic).to have_received(:new).with(aws_topic)
+        end
+
+        it "returns the wrapped topic instance" do
+          expect(found_topic).to be(wrapped_topic)
+        end
       end
 
       context "when the topic doesn't exist" do
