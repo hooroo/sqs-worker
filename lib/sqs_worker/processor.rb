@@ -10,12 +10,12 @@ module SqsWorker
     def initialize(worker_class, message_parser: MessageParser.new)
       @worker_class = worker_class
       @message_parser = message_parser
-      subscribe_for_shutdown
+      subscribe_for_signals
     end
 
     def process(message)
 
-      return  { success: false, message: message } if shutting_down?
+      return  { success: false, message: message } if stopping?
 
       result = true
 

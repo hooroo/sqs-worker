@@ -6,8 +6,8 @@ module SqsWorker
 
     describe '#run_all' do
 
-      let(:read_io) { double(IO) }
-      let(:write_io) { double(IO) }
+      subject(:runner) { described_class.new }
+      let(:signals_received) { ['TERM'] }
       let(:worker_resolver) { WorkerResolver.new }
       let(:worker_class_a) { double(Class) }
       let(:worker_class_b) { double(Class) }
@@ -18,29 +18,28 @@ module SqsWorker
 
       before do
         SqsWorker.logger = logger
-        expect(IO).to receive(:pipe).and_return [read_io, write_io]
-        expect(IO).to receive(:select).with([read_io])
         expect(WorkerResolver).to receive(:new).and_return worker_resolver
+        runner.instance_variable_set('@signals', signals_received)
       end
 
       after do
         SqsWorker.logger = nil
       end
 
-      it "traps signals" do
+      it 'traps signals' do
         expect(worker_resolver).to receive(:resolve_worker_classes).and_return []
 
-        ['SIGTERM', 'TERM', 'SIGINT'].each do |signal|
-          expect(Signal).to receive(:trap).with(signal).and_yield
-          expect(write_io).to receive(:puts).with(signal)
+        ['TERM','INT','USR1', 'USR2'].each do |signal|
+          expect(Signal).to receive(:trap).with(signal)
         end
 
-        Runner.run_all
+        expect(runner).to receive(:exit)
+
+        runner.run_all
       end
 
 
       it 'starts and shuts down managers on receipt of signal' do
-
         expect(worker_resolver).to receive(:resolve_worker_classes).and_return worker_classes
 
         expect(Manager).to receive(:new).with(worker_class_a).and_return(manager_a)
@@ -65,7 +64,9 @@ module SqsWorker
         expect(manager_a).to receive(:terminate)
         expect(manager_b).to receive(:terminate)
 
-        Runner.run_all
+        expect(runner).to receive(:exit)
+
+        runner.run_all
       end
 
     end

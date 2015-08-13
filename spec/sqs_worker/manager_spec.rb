@@ -111,7 +111,7 @@ module SqsWorker
       let(:batcher_pool) { double('batcher', busy_size: 0 ) }
 
       before do
-        manager.instance_variable_set(:@shutting_down, true)
+        manager.shutting_down(nil)
       end
 
       specify "when shutting down and the deleter isn't busy and the batcher isn't busy" do
@@ -120,7 +120,7 @@ module SqsWorker
 
       context "when not shutting down" do
         it "returns true" do
-          manager.instance_variable_set(:@shutting_down, false)
+          manager.starting(nil)
           expect(manager.running?).to be true
         end
       end
@@ -152,7 +152,27 @@ module SqsWorker
         manager.prepare_for_shutdown
         expect(manager.shutting_down?).to be true
       end
+    end
 
+    describe "#soft_stop" do
+      it "sends a signal to itself, batcher and processor" do
+        expect(batcher_pool).to receive(:publish).with('SIGUSR1')
+        expect(processor_pool).to receive(:publish).with('SIGUSR1')
+        expect(logger).to receive(:info).with(event_name: "sqs_worker_soft_stop", type: worker_class, queue_name: worker_class.config.queue_name)
+        manager.soft_stop
+        expect(manager.stopping?).to be true
+      end
+    end
+
+    describe "#soft_start" do
+      it "sends a signal to itself, batcher and processor" do
+        manager.soft_stop
+        expect(batcher_pool).to receive(:publish).with('SIGUSR2')
+        expect(processor_pool).to receive(:publish).with('SIGUSR2')
+        expect(logger).to receive(:info).with(event_name: "sqs_worker_soft_start", type: worker_class, queue_name: worker_class.config.queue_name)
+        manager.soft_start
+        expect(manager.stopping?).to be false
+      end
     end
   end
 end

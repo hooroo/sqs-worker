@@ -3,19 +3,28 @@ module SqsWorker
     include Celluloid
     include Celluloid::Notifications
 
-    def subscribe_for_shutdown
+    def subscribe_for_signals
       subscribe('SIGINT', :shutting_down)
       subscribe('TERM', :shutting_down)
       subscribe('SIGTERM', :shutting_down)
+      subscribe('USR1', :stopping)
+      subscribe('SIGUSR1', :stopping)
+      subscribe('USR2', :starting)
+      subscribe('SIGUSR2', :starting)
     end
 
-    def shutting_down(signal)
-      @shutting_down = true
+    def stopping(signal)
+      @stopping = true
+    end
+    alias_method :shutting_down, :stopping
+
+    def starting(signal)
+      @stopping = false
     end
 
-    def shutting_down?
-      !!@shutting_down
+    def stopping?
+      !!@stopping
     end
-
+    alias_method :shutting_down?, :stopping?
   end
 end

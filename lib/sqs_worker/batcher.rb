@@ -8,14 +8,14 @@ module SqsWorker
     def initialize(manager:, processor:)
       @manager = manager
       @processor = processor
-      subscribe_for_shutdown
+      subscribe_for_signals
     end
 
     def process(messages)
 
       successful_messages = []
 
-      unless shutting_down?
+      unless stopping?
 
         processed_results = messages.to_a.map { |message| processor.future.process(message) }
 

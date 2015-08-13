@@ -5,55 +5,87 @@ module SqsWorker
 
   class Runner
 
-    #Find all workers and start processing messages from their configured queues
     def self.run_all
+      new.run_all
+    end
 
-      read_io, write_io = IO.pipe
+    def run_all
+      trap_signals
 
-      trap_signals(write_io)
+      start_processing
 
-      begin
-
-        worker_classes = WorkerResolver.new.resolve_worker_classes
-
-        managers = worker_classes.map { |worker_class| Manager.new(worker_class) }
-
-        managers.each(&:start)
-
-        on_signal_received(read_io) do
-
-          managers.each(&:prepare_for_shutdown)
-
-          while managers.any?(&:running?)
-            sleep 1
-          end
-
-          managers.each do |manager|
-            SqsWorker.logger.info(event_name: "sqs_worker_shutdown_complete", type: manager.worker_class)
-          end
-
-          managers.each(&:terminate)
-
-        end
+      while true
+        handle_signals
+        sleep 1
       end
 
     rescue Interrupt
       exit 0
     end
 
-    def self.on_signal_received(read_io, &block)
-      IO.select([read_io]) #This will block until signal received
-      yield
+    private
+
+    def start_processing
+      managers.each(&:start)
     end
 
-    def self.trap_signals(write_io)
-      ['SIGTERM', 'TERM', 'SIGINT'].each do |signal|
-        Signal.trap(signal) do
-          write_io.puts(signal)
+    def restart_processing
+      managers.each(&:soft_start)
+    end
+
+    def stop_processing
+      managers.each(&:soft_stop)
+      while managers.any?(&:running?)
+        sleep 1
+      end
+    end
+
+    def shutdown
+      managers.each(&:prepare_for_shutdown)
+      while managers.any?(&:running?)
+        sleep 1
+      end
+      managers.each do |manager|
+        SqsWorker.logger.info(event_name: "sqs_worker_shutdown_complete", type: manager.worker_class)
+      end
+      managers.each(&:terminate)
+    end
+
+    def managers
+      @managers ||= worker_classes.map { |worker_class| Manager.new(worker_class) }
+    end
+
+    def worker_classes
+      @worker_classes ||= WorkerResolver.new.resolve_worker_classes
+    end
+
+    def trap_signals
+      @signals ||= []
+      %w(INT TERM USR1 USR2).each do |sig|
+        Signal.trap(sig) do
+          @signals << sig
+        end
+      end
+    end
+
+    def handle_signals
+      while sig = @signals.shift
+        case sig
+          when 'USR1'
+            stop_processing
+          when 'USR2'
+            restart_processing
+          when 'TERM'
+            shutdown
+            raise Interrupt, 'Shutting down!'
+          when 'INT'
+            shutdown
+            raise Interrupt, 'Shutting down!'
         end
       end
     end
 
   end
+
 
 end

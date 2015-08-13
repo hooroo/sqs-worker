@@ -19,7 +19,7 @@ module SqsWorker
       @worker_class = worker_class
       @empty_queue = false
 
-      subscribe_for_shutdown
+      subscribe_for_signals
     end
 
     def start
@@ -49,9 +49,18 @@ module SqsWorker
 
     def prepare_for_shutdown
       SqsWorker.logger.info(event_name: "sqs_worker_prepare_for_shutdown", type: worker_class, queue_name: worker_class.config.queue_name)
-      self.publish('SIGTERM')
-      batcher.publish('SIGTERM')
-      processor.publish('SIGTERM')
+      [self, batcher, processor].each { |receiver| receiver.publish('SIGTERM') }
+    end
+
+    def soft_stop
+      SqsWorker.logger.info(event_name: "sqs_worker_soft_stop", type: worker_class, queue_name: worker_class.config.queue_name)
+      [self, batcher, processor].each { |receiver| receiver.publish('SIGUSR1') }
+    end
+
+    def soft_start
+      SqsWorker.logger.info(event_name: "sqs_worker_soft_start", type: worker_class, queue_name: worker_class.config.queue_name)
+      [self, batcher, processor].each { |receiver| receiver.publish('SIGUSR2') }
+      fetch_messages(fetcher.size)
     end
 
     private
