@@ -22,7 +22,7 @@ module SqsWorker
     let(:processor) { double(Processor) }
     let(:processor_pool) { double('processor', async: processor, publish: true ) }
 
-    let(:fetcher) { double(Fetcher) }
+    let(:fetcher) { double(Fetcher, fetch: nil) }
     let(:fetcher_pool) { double('fetcher', async: fetcher, size: worker_config.num_fetchers ) }
 
     let(:deleter) { double(Deleter) }
