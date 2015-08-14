@@ -36,8 +36,10 @@ module SqsWorker
     def stop_processing
       managers.each(&:soft_stop)
       while managers.any?(&:running?)
-        sleep 1
+        SqsWorker.logger.info(event_name: "sqs_worker_still_running", type: manager.worker_class)
+        sleep 0.1
       end
+      SqsWorker.logger.info(event_name: "sqs_worker_soft_stop_complete", type: 'SqsWorker::Runner')
     end
 
     def shutdown
