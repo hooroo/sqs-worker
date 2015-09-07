@@ -35,12 +35,16 @@ module SqsWorker
 
     def stop_processing
       managers.each(&:soft_stop)
-      while managers.any?(&:running?)
-        managers.select(&:running?).each do |manager|
+
+      running_managers = managers.select(&:running?)
+      until running_managers.empty?
+        running_managers.each do |manager|
           SqsWorker.logger.info(event_name: "sqs_worker_still_running", type: manager.worker_class)
         end
         sleep 0.1
+        running_managers = managers.select(&:running?)
       end
+
       SqsWorker.logger.info(event_name: "sqs_worker_soft_stop_complete", type: 'SqsWorker::Runner')
     end
 

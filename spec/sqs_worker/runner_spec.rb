@@ -7,66 +7,137 @@ module SqsWorker
     describe '#run_all' do
 
       subject(:runner) { described_class.new }
-      let(:signals_received) { ['TERM'] }
+      let(:signals_received) { [] }
       let(:worker_resolver) { WorkerResolver.new }
       let(:worker_class_a) { double(Class) }
       let(:worker_class_b) { double(Class) }
       let(:worker_classes) { [worker_class_a, worker_class_b] }
-      let(:manager_a) { double(Manager, worker_class: worker_class_a) }
-      let(:manager_b) { double(Manager, worker_class: worker_class_b) }
+      let(:manager_a_running) { false }
+      let(:manager_b_running) { false }
+      let(:manager_a) do
+        instance_double(Manager,
+          worker_class: worker_class_a,
+          start: nil,
+          prepare_for_shutdown: nil,
+          running?: manager_a_running,
+          terminate: nil,
+          soft_stop: nil,
+          soft_start: nil
+        )
+      end
+
+      let(:manager_b) do
+        instance_double(Manager,
+          worker_class: worker_class_b,
+          start: nil,
+          prepare_for_shutdown: nil,
+          running?: manager_b_running,
+          terminate: nil,
+          soft_stop: nil,
+          soft_start: nil
+        )
+      end
+
       let(:logger) { double('logger', info: nil) }
 
       before do
         SqsWorker.logger = logger
-        expect(WorkerResolver).to receive(:new).and_return worker_resolver
+        allow(WorkerResolver).to receive(:new).and_return worker_resolver
+        allow(worker_resolver).to receive(:resolve_worker_classes).and_return worker_classes
         runner.instance_variable_set('@signals', signals_received)
+
+        allow(Manager).to receive(:new).with(worker_class_a).and_return(manager_a)
+        allow(Manager).to receive(:new).with(worker_class_b).and_return(manager_b)
       end
 
       after do
         SqsWorker.logger = nil
       end
 
-      it 'traps signals' do
-        expect(worker_resolver).to receive(:resolve_worker_classes).and_return []
+      describe 'Signal trapping' do
+        # Ensures the process exits instead of getting stuck in a loop
+        let(:signals_received) { ['TERM'] }
 
-        ['TERM','INT','USR1', 'USR2'].each do |signal|
-          expect(Signal).to receive(:trap).with(signal)
+        it 'traps signals' do
+          expect(worker_resolver).to receive(:resolve_worker_classes).and_return([])
+
+          ['TERM', 'INT', 'USR1', 'USR2'].each do |signal|
+            expect(Signal).to receive(:trap).with(signal)
+          end
+
+          expect(runner).to receive(:exit)
+
+          runner.run_all
         end
-
-        expect(runner).to receive(:exit)
-
-        runner.run_all
       end
 
+      describe 'behaviour upon receiving signals' do
+        before do
+          allow(runner).to receive(:exit)
+          allow(manager_a).to receive(:running?).and_return(*manager_running)
 
-      it 'starts and shuts down managers on receipt of signal' do
-        expect(worker_resolver).to receive(:resolve_worker_classes).and_return worker_classes
+          runner.run_all
+        end
 
-        expect(Manager).to receive(:new).with(worker_class_a).and_return(manager_a)
-        expect(Manager).to receive(:new).with(worker_class_b).and_return(manager_b)
+        let(:manager_running) { [manager_a_running] }
 
-        expect(manager_a).to receive(:start)
-        expect(manager_b).to receive(:start)
+        describe 'SIGUSR1' do
+          let(:signals_received) { ['USR1', 'TERM'] }
 
-        expect(manager_a).to receive(:prepare_for_shutdown)
-        expect(manager_b).to receive(:prepare_for_shutdown)
 
-        # Test that we keep asking until managers have stopped running
-        # This set of interactions are dependent on the order of the
-        # managers in the array as it fails fast on testing if any are running.
-        expect(manager_a).to receive(:running?).once.and_return(true)
-        expect(manager_a).to receive(:running?).once.and_return(false)
-        expect(manager_b).to receive(:running?).and_return(false)
+          it 'softly stops managers' do
+            expect(manager_a).to have_received(:soft_stop)
+            expect(manager_b).to have_received(:soft_stop)
+          end
 
-        expect(logger).to receive(:info).with(event_name: "sqs_worker_shutdown_complete", type: manager_a.worker_class)
-        expect(logger).to receive(:info).with(event_name: "sqs_worker_shutdown_complete", type: manager_b.worker_class)
+          it 'logs a message when managers have stopped' do
+            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_soft_stop_complete', type: 'SqsWorker::Runner')
+          end
 
-        expect(manager_a).to receive(:terminate)
-        expect(manager_b).to receive(:terminate)
+          context 'when the manager takes a while to stop' do
+            let(:manager_running) do
+              [true, true, false]
+            end
+            it 'logs a message when managers are still running' do
+              expect(logger).to have_received(:info).with(event_name: 'sqs_worker_still_running', type: manager_a.worker_class).
+              exactly(2).times
+            end
+          end
+        end
 
-        expect(runner).to receive(:exit)
+        describe 'SIGUSR2' do
+          let(:signals_received) { ['USR1', 'USR2', 'TERM'] }
 
-        runner.run_all
+          it 'softly starts managers' do
+            expect(manager_a).to have_received(:soft_start)
+            expect(manager_b).to have_received(:soft_start)
+          end
+        end
+
+        describe 'SIGTERM' do
+          let(:signals_received) { ['TERM'] }
+
+          it 'prepares the managers for shutdown' do
+            expect(manager_a).to have_received(:prepare_for_shutdown)
+            expect(manager_b).to have_received(:prepare_for_shutdown)
+          end
+
+          it 'logs a message per manager when it has completed the shutdown process' do
+            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_shutdown_complete', type: manager_a.worker_class)
+            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_shutdown_complete', type: manager_b.worker_class)
+          end
+
+          it 'terminates the managers' do
+            expect(manager_a).to have_received(:terminate)
+            expect(manager_b).to have_received(:terminate)
+          end
+
+          it 'terminates the runner' do
+            expect(runner).to have_received(:exit)
+          end
+
+        end
+
       end
 
     end
