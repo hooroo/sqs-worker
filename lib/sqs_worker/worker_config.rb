@@ -10,7 +10,7 @@ module SqsWorker
 
     def initialize(config)
 
-      raise "You must specify a queue name for all SqsWorker classes." unless config[:queue_name]
+      raise 'You must specify a queue name for all SqsWorker classes.' unless config[:queue_name]
 
       num_processors = [config[:processors].to_i, MIN_PROCESSORS].max
 

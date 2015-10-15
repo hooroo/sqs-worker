@@ -23,7 +23,7 @@ module SqsWorker
     end
 
     def start
-      logger.info(event_name: "sqs_worker_starting_manager", type: worker_class, queue_name: worker_class.config.queue_name)
+      logger.info(event_name: 'sqs_worker_starting_manager', type: worker_class, queue_name: worker_class.config.queue_name)
       fetch_messages(fetcher.size)
     end
 
@@ -48,17 +48,17 @@ module SqsWorker
     end
 
     def prepare_for_shutdown
-      SqsWorker.logger.info(event_name: "sqs_worker_prepare_for_shutdown", type: worker_class, queue_name: worker_class.config.queue_name)
+      SqsWorker.logger.info(event_name: 'sqs_worker_prepare_for_shutdown', type: worker_class, queue_name: worker_class.config.queue_name)
       [self, batcher, processor].each { |receiver| receiver.publish('SIGTERM') }
     end
 
     def soft_stop
-      SqsWorker.logger.info(event_name: "sqs_worker_soft_stop", type: worker_class, queue_name: worker_class.config.queue_name)
+      SqsWorker.logger.info(event_name: 'sqs_worker_soft_stop', type: worker_class, queue_name: worker_class.config.queue_name)
       [self, batcher, processor].each { |receiver| receiver.publish('SIGUSR1') }
     end
 
     def soft_start
-      SqsWorker.logger.info(event_name: "sqs_worker_soft_start", type: worker_class, queue_name: worker_class.config.queue_name)
+      SqsWorker.logger.info(event_name: 'sqs_worker_soft_start', type: worker_class, queue_name: worker_class.config.queue_name)
       [self, batcher, processor].each { |receiver| receiver.publish('SIGUSR2') }
       fetch_messages(fetcher.size)
     end

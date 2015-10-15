@@ -17,7 +17,7 @@ require 'byebug'
 
 RSpec.configure do |config|
 
-  config.order = "random"
+  config.order = 'random'
 
   config.before(:each) do
     Celluloid.boot

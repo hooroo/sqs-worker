@@ -39,13 +39,13 @@ module SqsWorker
       running_managers = managers.select(&:running?)
       until running_managers.empty?
         running_managers.each do |manager|
-          SqsWorker.logger.info(event_name: "sqs_worker_still_running", type: manager.worker_class)
+          SqsWorker.logger.info(event_name: 'sqs_worker_still_running', type: manager.worker_class)
         end
         sleep 0.1
         running_managers = managers.select(&:running?)
       end
 
-      SqsWorker.logger.info(event_name: "sqs_worker_soft_stop_complete", type: 'SqsWorker::Runner')
+      SqsWorker.logger.info(event_name: 'sqs_worker_soft_stop_complete', type: 'SqsWorker::Runner')
     end
 
     def shutdown
@@ -54,7 +54,7 @@ module SqsWorker
         sleep 1
       end
       managers.each do |manager|
-        SqsWorker.logger.info(event_name: "sqs_worker_shutdown_complete", type: manager.worker_class)
+        SqsWorker.logger.info(event_name: 'sqs_worker_shutdown_complete', type: manager.worker_class)
       end
       managers.each(&:terminate)
     end

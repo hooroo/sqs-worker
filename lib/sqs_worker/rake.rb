@@ -7,11 +7,11 @@ namespace :sqs_worker do
       begin
         break unless AWS::SQS.new.queues.first.nil?
       rescue Errno::ECONNREFUSED
-        puts "Waiting for the SQS Server to start..."
+        puts 'Waiting for the SQS Server to start...'
         sleep(0.5)
       end
     end
-    puts "Starting the SqsWorkers"
+    puts 'Starting the SqsWorkers'
     SqsWorker.run_all
   end
 

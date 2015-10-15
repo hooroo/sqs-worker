@@ -27,7 +27,7 @@ module SqsWorker
         end
       end
 
-      context "when the worker root is an existing directory" do
+      context 'when the worker root is an existing directory' do
 
         let(:directory_exists) { true }
 
@@ -41,10 +41,10 @@ module SqsWorker
         end
 
         it "doesn't include files that don't end with 'worker.rb'" do
-          expect(located_files).not_to include("invalid.rb")
+          expect(located_files).not_to include('invalid.rb')
         end
 
-        it "reverses the order of files" do
+        it 'reverses the order of files' do
           expect(located_files).to eq(%w(second_test_worker.rb first_test_worker.rb))
         end
       end

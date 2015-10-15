@@ -12,7 +12,7 @@ module SqsWorker
   end
 
   def self.logger
-    raise "Please specify a logger for the sqs worker gem via SqsWorker.logger = my_logger" if @logger.nil?
+    raise 'Please specify a logger for the sqs worker gem via SqsWorker.logger = my_logger' if @logger.nil?
     @logger
   end
 

@@ -23,11 +23,11 @@ module SqsWorker
         parsed_message = message_parser.parse(message)
         store_correlation_id(parsed_message)
 
-        log_event("sqs_worker_received_message")
+        log_event('sqs_worker_received_message')
 
         worker_class.new.perform(parsed_message.body)
 
-        log_event("sqs_worker_processed_message")
+        log_event('sqs_worker_processed_message')
 
       rescue Exception => exception
         log_exception(exception)

@@ -18,11 +18,11 @@ module SqsWorker
         allow(AWS::SNS).to receive(:new).and_return(aws_sns)
       end
 
-      it "returns the topic with the same name" do
+      it 'returns the topic with the same name' do
         expect(sns.find_topic(topic_name).name).to eq(topic_name)
       end
 
-      it "returns a wrapped topic instance" do
+      it 'returns a wrapped topic instance' do
         expect(sns.find_topic(topic_name)).to be_a(Topic)
       end
 

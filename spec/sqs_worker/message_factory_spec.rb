@@ -17,39 +17,39 @@ module SqsWorker
       Thread.current[:correlation_id] = correlation_id
     end
 
-    describe "#message" do
+    describe '#message' do
 
-      describe "adding a correlation_id as a message attribute" do
+      describe 'adding a correlation_id as a message attribute' do
 
-        context "when the correlation_id already has been set in the current thread" do
+        context 'when the correlation_id already has been set in the current thread' do
 
-          it "uses the specified value" do
+          it 'uses the specified value' do
             expect(message[:message_attributes][:correlation_id]).to eq(correlation_id)
           end
         end
 
-        context "when the correlation_id already has not been set in the current thread" do
+        context 'when the correlation_id already has not been set in the current thread' do
 
           let(:correlation_id) { nil }
 
-          it "uses a generated uuid" do
+          it 'uses a generated uuid' do
             expect(message[:message_attributes][:correlation_id]).to eq(uuid)
           end
         end
       end
 
-      context "when the message is a String" do
+      context 'when the message is a String' do
 
-        it "converts it to json" do
+        it 'converts it to json' do
           expect(message[:body]).to eq({ 'json' => 'message' })
         end
       end
 
-      context "when the message is not a String" do
+      context 'when the message is not a String' do
 
         let(:message_to_publish) { { 'not a string' => 'json' } }
 
-        it "includes the message as is" do
+        it 'includes the message as is' do
           expect(message[:body]).to eq(message_to_publish)
         end
       end

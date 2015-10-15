@@ -19,17 +19,17 @@ module SqsWorker
         allow(Queue).to receive(:new).and_return(wrapped_queue)
       end
 
-      it "finds the queue using the correct queue name" do
+      it 'finds the queue using the correct queue name' do
         sqs.find_queue(queue_name)
         expect(queues).to have_received(:named).with(queue_name)
       end
 
-      it "creates the queue with the sqs queue and correct queue name" do
+      it 'creates the queue with the sqs queue and correct queue name' do
         sqs.find_queue(queue_name)
         expect(Queue).to have_received(:new).with(queue, queue_name)
       end
 
-      it "returns a wrapped queue instance" do
+      it 'returns a wrapped queue instance' do
         expect(sqs.find_queue(queue_name)).to be(wrapped_queue)
       end
 
@@ -39,8 +39,8 @@ module SqsWorker
           allow(Queue).to receive(:new).and_raise(AWS::SQS::Errors::NonExistentQueue)
         end
 
-        it "raises an error" do
-          expect { sqs.find_queue("invalid") }.to raise_error(SqsWorker::Errors::NonExistentQueue)
+        it 'raises an error' do
+          expect { sqs.find_queue('invalid') }.to raise_error(SqsWorker::Errors::NonExistentQueue)
         end
       end
     end

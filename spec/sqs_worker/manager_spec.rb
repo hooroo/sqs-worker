@@ -57,14 +57,14 @@ module SqsWorker
         end
 
         it 'logs start' do
-          expect(logger).to receive(:info).with(event_name: "sqs_worker_starting_manager", type: worker_class, queue_name: worker_class.config.queue_name)
+          expect(logger).to receive(:info).with(event_name: 'sqs_worker_starting_manager', type: worker_class, queue_name: worker_class.config.queue_name)
           manager.start
         end
       end
 
-      describe "#fetch_done(messages)" do
+      describe '#fetch_done(messages)' do
 
-        it "processes the message" do
+        it 'processes the message' do
           expect(batcher).to receive(:process).once
           manager.fetch_done([])
         end
@@ -85,27 +85,27 @@ module SqsWorker
         end
       end
 
-      describe "#fetch_done(messages)" do
+      describe '#fetch_done(messages)' do
 
-        it "processes the message" do
+        it 'processes the message' do
           expect(batcher).to_not receive(:process)
           manager.fetch_done([])
         end
       end
     end
 
-    describe "#batch_done(messages)" do
+    describe '#batch_done(messages)' do
 
       let(:messages) { [] }
 
-      it "deletes the messages and fetches messages once" do
+      it 'deletes the messages and fetches messages once' do
         expect(deleter).to receive(:delete).with(messages).once
         expect(fetcher).to receive(:fetch).once
         manager.batch_done(messages)
       end
     end
 
-    describe "#running?" do
+    describe '#running?' do
 
       let(:deleter_pool) { double('deleter', busy_size: 0 ) }
       let(:batcher_pool) { double('batcher', busy_size: 0 ) }
@@ -118,58 +118,58 @@ module SqsWorker
         expect(manager.running?).to be false
       end
 
-      context "when not shutting down" do
-        it "returns true" do
+      context 'when not shutting down' do
+        it 'returns true' do
           manager.starting(nil)
           expect(manager.running?).to be true
         end
       end
 
-      context "when the deleter is busy" do
+      context 'when the deleter is busy' do
 
         let(:deleter_pool) { double('deleter', busy_size: 1 ) }
 
-        it "returns true" do
+        it 'returns true' do
           expect(manager.running?).to be true
         end
       end
 
-      context "when the batcher is busy" do
+      context 'when the batcher is busy' do
 
         let(:batcher_pool) { double('batcher', busy_size: 1 ) }
 
-        it "returns true" do
+        it 'returns true' do
           expect(manager.running?).to be true
         end
       end
     end
 
-    describe "#prepare_for_shutdown" do
-      it "sends a signal to itself, batcher and processor" do
+    describe '#prepare_for_shutdown' do
+      it 'sends a signal to itself, batcher and processor' do
         expect(batcher_pool).to receive(:publish).with('SIGTERM')
         expect(processor_pool).to receive(:publish).with('SIGTERM')
-        expect(logger).to receive(:info).with(event_name: "sqs_worker_prepare_for_shutdown", type: worker_class, queue_name: worker_class.config.queue_name)
+        expect(logger).to receive(:info).with(event_name: 'sqs_worker_prepare_for_shutdown', type: worker_class, queue_name: worker_class.config.queue_name)
         manager.prepare_for_shutdown
         expect(manager.shutting_down?).to be true
       end
     end
 
-    describe "#soft_stop" do
-      it "sends a signal to itself, batcher and processor" do
+    describe '#soft_stop' do
+      it 'sends a signal to itself, batcher and processor' do
         expect(batcher_pool).to receive(:publish).with('SIGUSR1')
         expect(processor_pool).to receive(:publish).with('SIGUSR1')
-        expect(logger).to receive(:info).with(event_name: "sqs_worker_soft_stop", type: worker_class, queue_name: worker_class.config.queue_name)
+        expect(logger).to receive(:info).with(event_name: 'sqs_worker_soft_stop', type: worker_class, queue_name: worker_class.config.queue_name)
         manager.soft_stop
         expect(manager.stopping?).to be true
       end
     end
 
-    describe "#soft_start" do
-      it "sends a signal to itself, batcher and processor" do
+    describe '#soft_start' do
+      it 'sends a signal to itself, batcher and processor' do
         manager.soft_stop
         expect(batcher_pool).to receive(:publish).with('SIGUSR2')
         expect(processor_pool).to receive(:publish).with('SIGUSR2')
-        expect(logger).to receive(:info).with(event_name: "sqs_worker_soft_start", type: worker_class, queue_name: worker_class.config.queue_name)
+        expect(logger).to receive(:info).with(event_name: 'sqs_worker_soft_start', type: worker_class, queue_name: worker_class.config.queue_name)
         manager.soft_start
         expect(manager.stopping?).to be false
       end

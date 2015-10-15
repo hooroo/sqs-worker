@@ -13,14 +13,14 @@ module SqsWorker
       OpenStruct.new(body: parsed_message[:body], message_attributes: parsed_message[:message_attributes])
 
     rescue JSON::ParserError => e
-      raise Errors::MessageFormat, "Invalid JSON"
+      raise Errors::MessageFormat, 'Invalid JSON'
     end
 
     private
 
     def validate!(parsed_message)
-      raise Errors::MessageFormat, "Missing body" if parsed_message[:body].nil?
-      raise Errors::MessageFormat, "Missing message attributes" if parsed_message[:message_attributes].nil?
+      raise Errors::MessageFormat, 'Missing body' if parsed_message[:body].nil?
+      raise Errors::MessageFormat, 'Missing message attributes' if parsed_message[:message_attributes].nil?
     end
 
   end
