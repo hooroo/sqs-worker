@@ -1,4 +1,4 @@
-require 'aws-sdk'
+require 'aws-sdk-v1'
 require 'singleton'
 require 'sqs_worker/queue'
 require 'sqs_worker/errors'
@@ -26,5 +26,3 @@ module SqsWorker
   end
 
 end
-
-
