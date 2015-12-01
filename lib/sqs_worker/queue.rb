@@ -16,6 +16,11 @@ module SqsWorker
       SqsWorker.logger.info(event_name: 'sqs_worker_sent_message', queue_name: name)
     end
 
+    def batch_send(message_list)
+      message_body = message_list.map { |message| message_factory.message(message).to_json }
+      @queue.batch_send(message_body)
+      SqsWorker.logger.info(event_name: 'sqs_worker_batch_sent_message', queue_name: name)
+    end
 
     private
 
