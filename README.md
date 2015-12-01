@@ -70,7 +70,11 @@ Queues are referenced via the lightweight SQS sdk wrapper:
 
 Messages can then be placed on the queue:
 
-`my_queue.send_message({ foo: 'bar' })`
+```ruby
+my_queue.send_message({ foo: 'bar' })
+# Or by batch:
+my_queue.batch_send([{ foo: 'bar' }, { fizz: 'buzz' }])
+```
 
 Currently only json can be placed on the queue and should be supplied as a ruby hash.
 
