@@ -13,13 +13,17 @@ module SqsWorker
     attr_reader :worker_class
 
     def initialize(worker_class)
-
-      @config = worker_class.config
+      @config               = worker_class.config
       @empty_queue_throttle = config.empty_queue_throttle
-      @worker_class = worker_class
-      @empty_queue = false
+      @worker_class         = worker_class
+      @empty_queue          = false
 
       subscribe_for_signals
+      subscribe(:unrecoverable_error, :handle_unrecoverable_error)
+    end
+
+    def handle_unrecoverable_error(signal, worker_class)
+      shutting_down(signal) if self.worker_class == worker_class
     end
 
     def start

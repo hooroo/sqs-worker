@@ -3,35 +3,34 @@ require 'sqs_worker/manager'
 
 module SqsWorker
   describe Manager do
-
-    subject(:manager) { described_class.new(worker_class) }
-
     let(:worker_class) { StubWorker }
     let(:worker_config) do
-      double(WorkerConfig, {
-        num_processors: 10,
-        num_fetchers: 2,
-        num_batchers: 2,
-        num_deleters: 2,
-        queue_name: 'test-queue',
-        empty_queue_throttle: 10,
-        fetcher_batch_size: 5
-      })
+      instance_double(WorkerConfig,
+                      num_processors:       10,
+                      num_fetchers:         2,
+                      num_batchers:         2,
+                      num_deleters:         2,
+                      queue_name:           'test-queue',
+                      empty_queue_throttle: 10,
+                      fetcher_batch_size:   5
+      )
     end
 
-    let(:processor) { double(Processor) }
-    let(:processor_pool) { double('processor', async: processor, publish: true ) }
+    let(:processor)       { double(Processor) }
+    let(:processor_pool)  { double('processor', async: processor, publish: true) }
 
-    let(:fetcher) { double(Fetcher, fetch: nil) }
-    let(:fetcher_pool) { double('fetcher', async: fetcher, size: worker_config.num_fetchers ) }
+    let(:fetcher)         { double(Fetcher, fetch: nil) }
+    let(:fetcher_pool)    { double('fetcher', async: fetcher, size: worker_config.num_fetchers) }
 
-    let(:deleter) { double(Deleter) }
-    let(:deleter_pool) { double('deleter', async: deleter ) }
+    let(:deleter)         { double(Deleter) }
+    let(:deleter_pool)    { double('deleter', async: deleter) }
 
-    let(:batcher) { double(Batcher) }
-    let(:batcher_pool) { double('batcher', async: batcher, publish: true ) }
+    let(:batcher)         { double(Batcher) }
+    let(:batcher_pool)    { double('batcher', async: batcher, publish: true) }
 
     let(:logger) { double('logger', info: nil) }
+
+    subject(:manager) { described_class.new(worker_class) }
 
     before do
       SqsWorker.logger = logger
@@ -40,7 +39,6 @@ module SqsWorker
       allow(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, manager: Manager, batch_size: worker_config.fetcher_batch_size }]).and_return(fetcher_pool)
       allow(Deleter).to receive(:pool).with(size: worker_config.num_deleters, args: [worker_config.queue_name]).and_return(deleter_pool)
       allow(Batcher).to receive(:pool).with(size: worker_config.num_batchers, args: [{ manager: Manager, processor: processor_pool }]).and_return(batcher_pool)
-      manager
     end
 
     after do
@@ -48,9 +46,7 @@ module SqsWorker
     end
 
     context 'while not shutting down' do
-
       describe '#fetch_messages / start' do
-
         it 'fetches messages based on number of fetchers' do
           expect(fetcher).to receive(:fetch).exactly(fetcher_pool.size).times
           manager.start
@@ -63,7 +59,6 @@ module SqsWorker
       end
 
       describe '#fetch_done(messages)' do
-
         it 'processes the message' do
           expect(batcher).to receive(:process).once
           manager.fetch_done([])
@@ -72,13 +67,11 @@ module SqsWorker
     end
 
     context 'while shutting down' do
-
       before do
         manager.shutting_down(nil)
       end
 
       describe '#fetch_messages / start' do
-
         it 'does not fetch any new messages' do
           expect(fetcher).to_not receive(:fetch)
           manager.start
@@ -86,7 +79,6 @@ module SqsWorker
       end
 
       describe '#fetch_done(messages)' do
-
         it 'processes the message' do
           expect(batcher).to_not receive(:process)
           manager.fetch_done([])
@@ -94,8 +86,33 @@ module SqsWorker
       end
     end
 
-    describe '#batch_done(messages)' do
+    describe '#handle_unrecoverable_error(signal, worker_class)' do
+      let(:signal) { double }
+      
+      subject(:handle_unrecoverable_error) { manager.handle_unrecoverable_error(signal, originating_worker_class) }
 
+      before do
+        handle_unrecoverable_error
+      end
+
+      context "when the signal originates it's worker class" do
+        let(:originating_worker_class) { worker_class }
+
+        it 'does not signal the manager to shut down' do
+          expect(manager.stopping?).to eq(true)
+        end
+      end
+
+      context "when the signal does not originate from  it's worker class" do
+        let(:originating_worker_class) { SomeOtherWorkerClass = Struct.new(:method) }
+
+        it 'signals the manager to shut down' do
+          expect(manager.stopping?).to eq(false)
+        end
+      end
+    end
+
+    describe '#batch_done(messages)' do
       let(:messages) { [] }
 
       it 'deletes the messages and fetches messages once' do
@@ -106,9 +123,8 @@ module SqsWorker
     end
 
     describe '#running?' do
-
-      let(:deleter_pool) { double('deleter', busy_size: 0 ) }
-      let(:batcher_pool) { double('batcher', busy_size: 0 ) }
+      let(:deleter_pool) { double('deleter', busy_size: 0) }
+      let(:batcher_pool) { double('batcher', busy_size: 0) }
 
       before do
         manager.shutting_down(nil)
@@ -126,8 +142,7 @@ module SqsWorker
       end
 
       context 'when the deleter is busy' do
-
-        let(:deleter_pool) { double('deleter', busy_size: 1 ) }
+        let(:deleter_pool) { double('deleter', busy_size: 1) }
 
         it 'returns true' do
           expect(manager.running?).to be true
@@ -135,8 +150,7 @@ module SqsWorker
       end
 
       context 'when the batcher is busy' do
-
-        let(:batcher_pool) { double('batcher', busy_size: 1 ) }
+        let(:batcher_pool) { double('batcher', busy_size: 1) }
 
         it 'returns true' do
           expect(manager.running?).to be true
@@ -178,9 +192,7 @@ module SqsWorker
 end
 
 class StubWorker
-
   def self.config
     OpenStruct.new(queue_name: 'queue_name')
   end
-
 end

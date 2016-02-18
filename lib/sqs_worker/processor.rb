@@ -8,29 +8,30 @@ module SqsWorker
     include SqsWorker::SignalHandler
 
     def initialize(worker_class, message_parser: MessageParser.new)
-      @worker_class = worker_class
+      @worker_class   = worker_class
       @message_parser = message_parser
       subscribe_for_signals
     end
 
     def process(message)
-
-      return  { success: false, message: message } if stopping?
+      return { success: false, message: message } if stopping?
 
       result = true
-
       begin
         parsed_message = message_parser.parse(message)
         store_correlation_id(parsed_message)
 
         log_event('sqs_worker_received_message')
-
         worker_class.new.perform(parsed_message.body)
-
         log_event('sqs_worker_processed_message')
 
-      rescue Exception => exception
-        log_exception(exception)
+      rescue SqsWorker::Errors::UnrecoverableError => error
+        publish(:unrecoverable_error, worker_class)
+        log_exception(error)
+        result = false
+
+      rescue StandardError => error
+        log_exception(error)
         result = false
 
       ensure
@@ -49,19 +50,18 @@ module SqsWorker
     end
 
     def log_exception(exception)
-      SqsWorker.logger.error({
-        event_name: :sqs_worker_processor_error,
-        queue_name: worker_class.config.queue_name,
+      SqsWorker.logger.error(
+        event_name:   :sqs_worker_processor_error,
+        queue_name:   worker_class.config.queue_name,
         worker_class: worker_class.name,
-        error_class: exception.class.name,
-        exception: exception,
-        backtrace: exception.backtrace
-      })
+        error_class:  exception.class.name,
+        exception:    exception,
+        backtrace:    exception.backtrace
+      )
     end
 
     def log_event(event_name)
       SqsWorker.logger.info(event_name: event_name, type: worker_class, queue_name: worker_class.config.queue_name)
     end
-
   end
 end

@@ -32,7 +32,7 @@ module SqsWorker
 
     let(:message_parser) { instance_double(MessageParser, parse: parsed_message) }
 
-    let(:fake_active_record) { double('ActiveRecord::Base', clear_active_connections!: nil)}
+    let(:fake_active_record) { double('ActiveRecord::Base', clear_active_connections!: nil) }
 
     before do
       SqsWorker.logger = logger
@@ -81,42 +81,83 @@ module SqsWorker
           end
         end
 
-        context 'when the worker raises an exception' do
-
+        describe 'error handling' do
           let(:logger) { double('logger', error: nil, info: nil) }
 
           before do
             SqsWorker.logger = logger
-            expect(worker).to receive(:perform).with(message_body).and_raise(Exception)
           end
 
-          after do
-            SqsWorker.logger = nil
+          context 'when the worker raises an unrecoverable error' do
+            before do
+              expect(worker).to receive(:perform).with(message_body).and_raise(SqsWorker::Errors::UnrecoverableError)
+            end
+
+            after do
+              SqsWorker.logger = nil
+            end
+
+            it 'logs the exception' do
+              expect(logger).to receive(:error).with(
+                event_name:   :sqs_worker_processor_error,
+                queue_name:   test_worker_class.config.queue_name,
+                worker_class: test_worker_class.name,
+                error_class:  SqsWorker::Errors::UnrecoverableError.name,
+                exception:    SqsWorker::Errors::UnrecoverableError,
+                backtrace:    Array
+              )
+              processor.process(message)
+            end
+
+            it "publishes an unrecoverable_error with it's worker class" do
+              expect(Celluloid::Notifications.notifier).to receive(:publish).with(:unrecoverable_error, test_worker_class)
+              processor.process(message)
+            end
+            
+            it 'returns with success = false' do
+              result = processor.process(message)
+              expect(result[:success]).to be false
+            end
+
+            it 'clears active connections on active record' do
+              expect(fake_active_record).to receive(:clear_active_connections!)
+              result = processor.process(message)
+            end
           end
 
-          it 'logs the exception' do
-            expect(logger).to receive(:error).with({
-              event_name: :sqs_worker_processor_error,
-              queue_name: test_worker_class.config.queue_name,
-              worker_class: test_worker_class.name,
-              error_class: Exception.name,
-              exception: Exception,
-              backtrace: Array
-            })
-            processor.process(message)
-          end
+          context 'when the worker raises an error' do
+            before do
+              expect(worker).to receive(:perform).with(message_body).and_raise(StandardError)
+            end
 
-          it 'returns with success = false' do
-            result = processor.process(message)
-            expect(result[:success]).to be false
-          end
+            after do
+              SqsWorker.logger = nil
+            end
 
-          it 'clears active connections on active record' do
-            expect(fake_active_record).to receive(:clear_active_connections!)
-            result = processor.process(message)
-          end
+            it 'logs the exception' do
+              expect(logger).to receive(:error).with(
+                event_name:   :sqs_worker_processor_error,
+                queue_name:   test_worker_class.config.queue_name,
+                worker_class: test_worker_class.name,
+                error_class:  StandardError.name,
+                exception:    StandardError,
+                backtrace:    Array
+              )
+              processor.process(message)
+            end
 
+            it 'returns with success = false' do
+              result = processor.process(message)
+              expect(result[:success]).to be false
+            end
+
+            it 'clears active connections on active record' do
+              expect(fake_active_record).to receive(:clear_active_connections!)
+              result = processor.process(message)
+            end
+          end
         end
+
       end
 
       context 'when shutting down' do
