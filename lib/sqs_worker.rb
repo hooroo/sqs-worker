@@ -20,6 +20,14 @@ module SqsWorker
     @logger = logger
   end
 
+  def self.heartbeat_logger
+    @heartbeat_logger || self.logger
+  end
+
+  def self.heartbeat_logger=(heartbeat_logger)
+    @heartbeat_logger = heartbeat_logger
+  end
+
   def self.configure
     yield(config)
   end

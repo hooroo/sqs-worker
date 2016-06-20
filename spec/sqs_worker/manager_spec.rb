@@ -28,7 +28,7 @@ module SqsWorker
     let(:batcher)         { double(Batcher) }
     let(:batcher_pool)    { double('batcher', async: batcher, publish: true) }
 
-    let(:logger) { double('logger', info: nil) }
+    let(:logger)          { double('logger', info: nil) }
 
     let(:heartbeat_monitor) { double('heartbeat') }
 

@@ -71,7 +71,8 @@ module SqsWorker
     end
 
     def heartbeat_monitor
-      @heartbeat_monitor ||= Heartbeat::LogFileHeartbeatMonitor.new(logger: SqsWorker.logger, threshold_seconds: HEARTBEAT_THRESHOLD)
+      @heartbeat_monitor ||= Heartbeat::LogFileHeartbeatMonitor.new(logger: SqsWorker.heartbeat_logger,
+                                                                    threshold_seconds: HEARTBEAT_THRESHOLD)
     end
 
     def trap_signals
