@@ -30,7 +30,9 @@ module SqsWorker
 
     let(:logger) { double('logger', info: nil) }
 
-    subject(:manager) { described_class.new(worker_class) }
+    let(:heartbeat_monitor) { double('heartbeat') }
+
+    subject(:manager) { described_class.new(worker_class: worker_class, heartbeat_monitor: heartbeat_monitor) }
 
     before do
       SqsWorker.logger = logger
@@ -39,6 +41,7 @@ module SqsWorker
       allow(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, manager: Manager, batch_size: worker_config.fetcher_batch_size }]).and_return(fetcher_pool)
       allow(Deleter).to receive(:pool).with(size: worker_config.num_deleters, args: [worker_config.queue_name]).and_return(deleter_pool)
       allow(Batcher).to receive(:pool).with(size: worker_config.num_batchers, args: [{ manager: Manager, processor: processor_pool }]).and_return(batcher_pool)
+      allow(heartbeat_monitor).to receive(:tick)
     end
 
     after do
@@ -59,9 +62,17 @@ module SqsWorker
       end
 
       describe '#fetch_done(messages)' do
-        it 'processes the message' do
-          expect(batcher).to receive(:process).once
+        before do
+          allow(batcher).to receive(:process).once
           manager.fetch_done([])
+        end
+
+        it 'processes the message' do
+          expect(batcher).to have_received(:process).once
+        end
+
+        it 'sends a tick to the heartbeat monitor' do
+          expect(heartbeat_monitor).to have_received(:tick).once
         end
       end
     end

@@ -1,9 +1,12 @@
 require 'sqs_worker/manager'
 require 'sqs_worker/worker_resolver'
+require 'sqs_worker/heartbeat/log_file_heartbeat_monitor'
 
 module SqsWorker
 
   class Runner
+
+    HEARTBEAT_THRESHOLD = 60
 
     def self.run_all
       new.run_all
@@ -60,11 +63,15 @@ module SqsWorker
     end
 
     def managers
-      @managers ||= worker_classes.map { |worker_class| Manager.new(worker_class) }
+      @managers ||= worker_classes.map { |worker_class| Manager.new(worker_class: worker_class, heartbeat_monitor: heartbeat_monitor) }
     end
 
     def worker_classes
       @worker_classes ||= WorkerResolver.new.resolve_worker_classes
+    end
+
+    def heartbeat_monitor
+      @heartbeat_monitor ||= Heartbeat::LogFileHeartbeatMonitor.new(logger: SqsWorker.logger, threshold_seconds: HEARTBEAT_THRESHOLD)
     end
 
     def trap_signals

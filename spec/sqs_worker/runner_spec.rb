@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'sqs_worker/runner'
+require 'sqs_worker/heartbeat/log_file_heartbeat_monitor'
 
 module SqsWorker
   describe Runner do
@@ -38,6 +39,10 @@ module SqsWorker
         )
       end
 
+      let(:heartbeat_monitor) do
+        double(Heartbeat::LogFileHeartbeatMonitor)
+      end
+
       let(:logger) { double('logger', info: nil) }
 
       before do
@@ -46,8 +51,9 @@ module SqsWorker
         allow(worker_resolver).to receive(:resolve_worker_classes).and_return worker_classes
         runner.instance_variable_set('@signals', signals_received)
 
-        allow(Manager).to receive(:new).with(worker_class_a).and_return(manager_a)
-        allow(Manager).to receive(:new).with(worker_class_b).and_return(manager_b)
+        allow(Heartbeat::LogFileHeartbeatMonitor).to receive(:new).with(logger: logger, threshold_seconds: 60).and_return(heartbeat_monitor)
+        allow(Manager).to receive(:new).with(worker_class: worker_class_a, heartbeat_monitor: heartbeat_monitor).and_return(manager_a)
+        allow(Manager).to receive(:new).with(worker_class: worker_class_b, heartbeat_monitor: heartbeat_monitor).and_return(manager_b)
       end
 
       after do

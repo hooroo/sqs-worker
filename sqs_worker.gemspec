@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.1.0'
   spec.add_development_dependency 'byebug'
+  spec.add_development_dependency 'timecop', '~> 0.8.1'
 
   spec.add_dependency 'celluloid', '~> 0.16.0'
   spec.add_dependency 'aws-sdk-v1', '~> 1.66'

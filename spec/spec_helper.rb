@@ -1,6 +1,7 @@
 require 'celluloid/test'
 require 'sqs_worker'
 require 'byebug'
+require 'timecop'
 
 
 # require "codeclimate-test-reporter"
@@ -25,6 +26,7 @@ RSpec.configure do |config|
 
   config.after(:each) do
     Celluloid.shutdown
+    Timecop.return
   end
 
 end

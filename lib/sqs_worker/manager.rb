@@ -12,11 +12,12 @@ module SqsWorker
 
     attr_reader :worker_class
 
-    def initialize(worker_class)
+    def initialize(worker_class:, heartbeat_monitor:)
       @config               = worker_class.config
       @empty_queue_throttle = config.empty_queue_throttle
       @worker_class         = worker_class
       @empty_queue          = false
+      @heartbeat_monitor    = heartbeat_monitor
 
       subscribe_for_signals
       subscribe(:unrecoverable_error, :handle_unrecoverable_error)
@@ -38,6 +39,7 @@ module SqsWorker
     end
 
     def fetch_done(messages)
+      heartbeat_monitor.tick
       self.empty_queue = messages.empty?
       batcher.async.process(messages) unless shutting_down?
     end
@@ -69,7 +71,7 @@ module SqsWorker
 
     private
 
-    attr_reader :config, :empty_queue_throttle
+    attr_reader :config, :empty_queue_throttle, :heartbeat_monitor
     attr_accessor :empty_queue
 
     def processor
