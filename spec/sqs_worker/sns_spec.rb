@@ -7,6 +7,7 @@ module SqsWorker
     subject(:sns) { described_class.clone.instance }
 
     let(:aws_sns) { double(AWS::SNS, topics: topics) }
+    let(:logger) { double('logger') }
     let(:topics) { [topic, other_topic] }
     let(:topic) { instance_double(AWS::SNS::Topic, name: topic_name) }
     let(:other_topic) { instance_double(AWS::SNS::Topic, name: 'other_topic') }
@@ -15,6 +16,7 @@ module SqsWorker
     describe '#find_topic' do
 
       before do
+        allow(SqsWorker).to receive(:logger).and_return(logger)
         allow(AWS::SNS).to receive(:new).and_return(aws_sns)
       end
 
