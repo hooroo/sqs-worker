@@ -9,7 +9,7 @@ module SqsWorker
     include Singleton
 
     def initialize
-      @sns = ::AWS::SNS.new
+      @sns = ::AWS::SNS.new(logger: SqsWorker.logger)
       super(@sns)
     end
 
