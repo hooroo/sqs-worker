@@ -9,6 +9,7 @@ module SqsWorker
     include Singleton
 
     def initialize
+      AWS.config(log_level: :debug)
       @sqs = ::AWS::SQS.new(logger: SqsWorker.logger)
       super(@sqs)
     end

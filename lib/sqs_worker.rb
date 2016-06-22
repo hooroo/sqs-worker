@@ -8,7 +8,6 @@ module SqsWorker
 
   def self.run_all
     require 'celluloid/autostart'
-    AWS.config(log_level: :debug)
     Runner.run_all
   end
 
