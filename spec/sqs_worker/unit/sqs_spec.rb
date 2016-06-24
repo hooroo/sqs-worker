@@ -7,6 +7,7 @@ module SqsWorker
     subject(:sqs) { described_class.clone.instance }
 
     let(:aws_sqs) { double(AWS::SQS, queues: queues) }
+    let(:logger) { double('logger') }
     let(:queues) { instance_double(AWS::SQS::QueueCollection, named: queue) }
     let(:queue) { instance_double(AWS::SQS::Queue) }
     let(:wrapped_queue) { instance_double(Queue)}
@@ -15,6 +16,7 @@ module SqsWorker
     describe '#find_queue' do
 
       before do
+        allow(SqsWorker).to receive(:logger).and_return(logger)
         allow(AWS::SQS).to receive(:new).and_return(aws_sqs)
         allow(Queue).to receive(:new).and_return(wrapped_queue)
       end
