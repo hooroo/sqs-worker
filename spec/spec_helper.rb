@@ -22,6 +22,7 @@ RSpec.configure do |config|
 
   config.before(:each) do
     Celluloid.boot
+    SqsWorker.config.worker_configurations.clear
   end
 
   config.after(:each) do

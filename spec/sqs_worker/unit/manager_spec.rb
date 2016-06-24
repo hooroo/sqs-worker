@@ -3,7 +3,7 @@ require 'sqs_worker/manager'
 
 module SqsWorker
   describe Manager do
-    let(:worker_class) { StubWorker }
+    let(:worker_class) { UnitStubWorker }
     let(:worker_config) do
       instance_double(WorkerConfig,
                       num_processors:       10,
@@ -36,7 +36,7 @@ module SqsWorker
 
     before do
       SqsWorker.logger = logger
-      allow(StubWorker).to receive(:config).and_return(worker_config)
+      allow(UnitStubWorker).to receive(:config).and_return(worker_config)
       allow(Processor).to receive(:pool).with(size: worker_config.num_processors, args: worker_class).and_return(processor_pool)
       allow(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, manager: Manager, batch_size: worker_config.fetcher_batch_size }]).and_return(fetcher_pool)
       allow(Deleter).to receive(:pool).with(size: worker_config.num_deleters, args: [worker_config.queue_name]).and_return(deleter_pool)
@@ -202,7 +202,7 @@ module SqsWorker
   end
 end
 
-class StubWorker
+class UnitStubWorker
   def self.config
     OpenStruct.new(queue_name: 'queue_name')
   end

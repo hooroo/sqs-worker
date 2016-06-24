@@ -40,6 +40,7 @@ module SqsWorker
 
     def fetch_done(messages)
       heartbeat_monitor.tick
+
       self.empty_queue = messages.empty?
       batcher.async.process(messages) unless shutting_down?
     end
