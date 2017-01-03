@@ -11,18 +11,20 @@ module SqsWorker
     def initialize
       AWS.config(log_level: :debug)
       @sqs = ::AWS::SQS.new(logger: SqsWorker.logger)
+      @queues = sqs.queues
+      @queue_cache = {}
       super(@sqs)
     end
 
     def find_queue(queue_name)
-      Queue.new(sqs.queues.named(queue_name.to_s), queue_name.to_s)
+      @queue_cache[queue_name] ||= Queue.new(queues.named(queue_name.to_s), queue_name.to_s)
     rescue AWS::SQS::Errors::NonExistentQueue => e
       raise SqsWorker::Errors::NonExistentQueue, "No queue found with name '#{queue_name}'"
     end
 
     private
 
-    attr_reader :sqs
+    attr_reader :sqs, :queues, :queue_cache
 
   end
 

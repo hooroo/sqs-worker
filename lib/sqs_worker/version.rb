@@ -1,3 +1,3 @@
 module SqsWorker
-  VERSION = "1.1.#{ENV['PATCH_VERSION'] || 0}"
+  VERSION = "1.2.#{ENV['PATCH_VERSION'] || 0}"
 end
