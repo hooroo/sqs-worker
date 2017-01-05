@@ -23,6 +23,7 @@ namespace :sqs_worker do
     end
 
     puts 'Starting the SqsWorkers'
+    STDOUT.flush
     SqsWorker.run_all
   end
 
