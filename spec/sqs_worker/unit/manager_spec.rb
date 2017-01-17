@@ -3,6 +3,7 @@ require 'sqs_worker/manager'
 
 module SqsWorker
   describe Manager do
+
     let(:worker_class) { UnitStubWorker }
     let(:worker_config) do
       instance_double(WorkerConfig,
@@ -10,11 +11,14 @@ module SqsWorker
                       num_fetchers:         2,
                       num_batchers:         2,
                       num_deleters:         2,
-                      queue_name:           'test-queue',
+                      queue_name:           queue_name,
                       empty_queue_throttle: 10,
                       fetcher_batch_size:   5
       )
     end
+
+    let(:sqs_instance)    { double(SqsWorker::Sqs) }
+    let(:queue_name)      { 'test-queue' }
 
     let(:processor)       { double(Processor) }
     let(:processor_pool)  { double('processor', async: processor, publish: true) }
@@ -28,7 +32,7 @@ module SqsWorker
     let(:batcher)         { double(Batcher) }
     let(:batcher_pool)    { double('batcher', async: batcher, publish: true) }
 
-    let(:logger)          { double('logger', info: nil) }
+    let(:logger)          { double('logger', debug: nil, info: nil) }
 
     let(:heartbeat_monitor) { double('heartbeat') }
 
@@ -36,6 +40,8 @@ module SqsWorker
 
     before do
       SqsWorker.logger = logger
+      allow(SqsWorker::Sqs).to receive(:instance).and_return(sqs_instance)
+      allow(sqs_instance).to receive(:find_queue).with(queue_name)
       allow(UnitStubWorker).to receive(:config).and_return(worker_config)
       allow(Processor).to receive(:pool).with(size: worker_config.num_processors, args: worker_class).and_return(processor_pool)
       allow(Fetcher).to receive(:pool).with(size: worker_config.num_fetchers, args: [{ queue_name: worker_config.queue_name, manager: Manager, batch_size: worker_config.fetcher_batch_size }]).and_return(fetcher_pool)
@@ -57,6 +63,20 @@ module SqsWorker
 
         it 'logs start' do
           expect(logger).to receive(:info).with(event_name: 'sqs_worker_starting_manager', type: worker_class, queue_name: worker_class.config.queue_name)
+          manager.start
+        end
+      end
+
+      context 'when the queue does not exist' do
+
+        before do
+          allow(sqs_instance).to receive(:find_queue).with(queue_name).and_raise(SqsWorker::Errors::NonExistentQueue)
+          allow(manager).to receive(:prepare_for_shutdown).and_return(nil)
+        end
+
+        it 'raises an error' do
+          # expect(manager).to receive(:prepare_for_shutdown) <- would prefer to use this but it won't work...
+          expect_any_instance_of(described_class).to receive(:prepare_for_shutdown)
           manager.start
         end
       end

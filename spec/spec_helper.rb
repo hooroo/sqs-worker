@@ -3,7 +3,6 @@ require 'sqs_worker'
 require 'byebug'
 require 'timecop'
 
-
 # require "codeclimate-test-reporter"
 # CodeClimate::TestReporter.start
 
@@ -14,7 +13,6 @@ require 'timecop'
 #   access_key_id: "fake access key",
 #   secret_access_key: "fake secret key"
 # })
-
 
 RSpec.configure do |config|
 
@@ -29,5 +27,4 @@ RSpec.configure do |config|
     Celluloid.shutdown
     Timecop.return
   end
-
 end

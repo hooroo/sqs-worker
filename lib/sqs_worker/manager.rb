@@ -28,6 +28,7 @@ module SqsWorker
     end
 
     def start
+      verify_queue_is_accessible!
       logger.info(event_name: 'sqs_worker_starting_manager', type: worker_class, queue_name: worker_class.config.queue_name)
       fetch_messages(fetcher.size)
     end
@@ -97,6 +98,12 @@ module SqsWorker
 
     def logger
       SqsWorker.logger
+    end
+
+    def verify_queue_is_accessible!
+      Sqs.instance.find_queue(worker_class.config.queue_name)
+    rescue SqsWorker::Errors::NonExistentQueue => e
+      prepare_for_shutdown
     end
 
   end

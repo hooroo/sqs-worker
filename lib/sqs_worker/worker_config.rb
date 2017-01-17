@@ -20,15 +20,6 @@ module SqsWorker
       @queue_name = config[:queue_name]
       @empty_queue_throttle = config[:empty_queue_throttle] || DEFAULT_EMPTY_QUEUE_THROTTLE
       @fetcher_batch_size = [(@num_processors / @num_fetchers).to_i, MAX_FETCH_BATCH_SIZE].min
-
-      verify_queue_exists!
-    end
-
-
-    private
-
-    def verify_queue_exists!
-      Sqs.instance.find_queue(queue_name)
     end
 
   end
