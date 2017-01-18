@@ -103,7 +103,7 @@ module SqsWorker
     def verify_queue_is_accessible!
       Sqs.instance.find_queue(worker_class.config.queue_name)
     rescue SqsWorker::Errors::NonExistentQueue => e
-      prepare_for_shutdown
+      SqsWorker.shutdown
     end
 
   end

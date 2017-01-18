@@ -71,12 +71,12 @@ module SqsWorker
 
         before do
           allow(sqs_instance).to receive(:find_queue).with(queue_name).and_raise(SqsWorker::Errors::NonExistentQueue)
-          allow(manager).to receive(:prepare_for_shutdown).and_return(nil)
+          allow(SqsWorker).to receive(:shutdown).and_return(nil)
         end
 
         it 'raises an error' do
           # expect(manager).to receive(:prepare_for_shutdown) <- would prefer to use this but it won't work...
-          expect_any_instance_of(described_class).to receive(:prepare_for_shutdown)
+          expect(SqsWorker).to receive(:shutdown)
           manager.start
         end
       end

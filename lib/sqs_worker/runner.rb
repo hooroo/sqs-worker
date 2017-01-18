@@ -3,7 +3,6 @@ require 'sqs_worker/worker_resolver'
 require 'sqs_worker/heartbeat/log_file_heartbeat_monitor'
 
 module SqsWorker
-
   class Runner
 
     HEARTBEAT_THRESHOLD = 60
@@ -25,6 +24,18 @@ module SqsWorker
     rescue Interrupt
       exit 0
     end
+
+    def shutdown
+      managers.each(&:prepare_for_shutdown)
+      while managers.any?(&:running?)
+        sleep 1
+      end
+      managers.each do |manager|
+        SqsWorker.logger.info(event_name: 'sqs_worker_shutdown_complete', type: manager.worker_class)
+      end
+      managers.each(&:terminate)
+    end
+
 
     private
 
@@ -49,17 +60,6 @@ module SqsWorker
       end
 
       SqsWorker.logger.info(event_name: 'sqs_worker_soft_stop_complete', type: 'SqsWorker::Runner')
-    end
-
-    def shutdown
-      managers.each(&:prepare_for_shutdown)
-      while managers.any?(&:running?)
-        sleep 1
-      end
-      managers.each do |manager|
-        SqsWorker.logger.info(event_name: 'sqs_worker_shutdown_complete', type: manager.worker_class)
-      end
-      managers.each(&:terminate)
     end
 
     def managers

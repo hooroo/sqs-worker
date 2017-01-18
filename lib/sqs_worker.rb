@@ -8,7 +8,12 @@ module SqsWorker
 
   def self.run_all
     require 'celluloid/autostart'
-    Runner.run_all
+    @runner = Runner.new
+    @runner.run_all
+  end
+
+  def self.shutdown
+    @runner.shutdown
   end
 
   def self.logger
