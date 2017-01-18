@@ -14,6 +14,7 @@ module SqsWorker
     def run_all
       trap_signals
 
+      prepare_to_start_processing
       start_processing
 
       while true
@@ -38,6 +39,10 @@ module SqsWorker
 
 
     private
+
+    def prepare_to_start_processing
+      managers.each(&:prepare_to_start)
+    end
 
     def start_processing
       managers.each(&:start)

@@ -55,7 +55,41 @@ module SqsWorker
     end
 
     context 'while not shutting down' do
-      describe '#fetch_messages / start' do
+
+      describe '#prepare_to_start' do
+
+        before do
+          allow(SqsWorker).to receive(:shutdown).and_return(nil)
+        end
+
+        context 'when the queue exists' do
+
+          it 'does not shutdown all workers' do
+            expect(SqsWorker).to_not receive(:shutdown)
+            manager.prepare_to_start
+          end
+        end
+
+        context 'when the queue does not exist' do
+
+          before do
+            allow(sqs_instance).to receive(:find_queue).with(queue_name).and_raise(SqsWorker::Errors::NonExistentQueue)
+          end
+
+          it 'logs that the queue was not found' do
+            expect(logger).to receive(:info).with(event_name: 'sqs_worker_queue_not_found', type: worker_class, queue_name: worker_class.config.queue_name)
+            manager.prepare_to_start
+          end
+
+          it 'raises an error' do
+            expect(SqsWorker).to receive(:shutdown)
+            manager.prepare_to_start
+          end
+        end
+      end
+
+      describe '#start' do
+
         it 'fetches messages based on number of fetchers' do
           expect(fetcher).to receive(:fetch).exactly(fetcher_pool.size).times
           manager.start
@@ -63,20 +97,6 @@ module SqsWorker
 
         it 'logs start' do
           expect(logger).to receive(:info).with(event_name: 'sqs_worker_starting_manager', type: worker_class, queue_name: worker_class.config.queue_name)
-          manager.start
-        end
-      end
-
-      context 'when the queue does not exist' do
-
-        before do
-          allow(sqs_instance).to receive(:find_queue).with(queue_name).and_raise(SqsWorker::Errors::NonExistentQueue)
-          allow(SqsWorker).to receive(:shutdown).and_return(nil)
-        end
-
-        it 'raises an error' do
-          # expect(manager).to receive(:prepare_for_shutdown) <- would prefer to use this but it won't work...
-          expect(SqsWorker).to receive(:shutdown)
           manager.start
         end
       end

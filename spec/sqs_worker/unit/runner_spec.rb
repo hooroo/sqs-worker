@@ -8,6 +8,7 @@ module SqsWorker
     describe '#run_all' do
 
       subject(:runner) { described_class.new }
+
       let(:signals_received) { [] }
       let(:worker_resolver) { WorkerResolver.new }
       let(:worker_class_a) { double(Class) }
@@ -18,6 +19,7 @@ module SqsWorker
       let(:manager_a) do
         instance_double(Manager,
           worker_class: worker_class_a,
+          prepare_to_start: nil,
           start: nil,
           prepare_for_shutdown: nil,
           running?: manager_a_running,
@@ -30,6 +32,7 @@ module SqsWorker
       let(:manager_b) do
         instance_double(Manager,
           worker_class: worker_class_b,
+          prepare_to_start: nil,
           start: nil,
           prepare_for_shutdown: nil,
           running?: manager_b_running,

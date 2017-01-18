@@ -27,8 +27,11 @@ module SqsWorker
       shutting_down(signal) if self.worker_class == worker_class
     end
 
-    def start
+    def prepare_to_start
       verify_queue_is_accessible!
+    end
+
+    def start
       logger.info(event_name: 'sqs_worker_starting_manager', type: worker_class, queue_name: worker_class.config.queue_name)
       fetch_messages(fetcher.size)
     end
@@ -103,6 +106,7 @@ module SqsWorker
     def verify_queue_is_accessible!
       Sqs.instance.find_queue(worker_class.config.queue_name)
     rescue SqsWorker::Errors::NonExistentQueue => e
+      SqsWorker.logger.info(event_name: 'sqs_worker_queue_not_found', type: worker_class, queue_name: worker_class.config.queue_name)
       SqsWorker.shutdown
     end
 
