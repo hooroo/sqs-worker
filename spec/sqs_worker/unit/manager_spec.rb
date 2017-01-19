@@ -64,9 +64,8 @@ module SqsWorker
 
         context 'when the queue exists' do
 
-          it 'does not shutdown all workers' do
-            expect(SqsWorker).to_not receive(:shutdown)
-            manager.prepare_to_start
+          it 'does not raise an error' do
+            expect { manager.prepare_to_start }.to_not raise_error
           end
         end
 
@@ -78,12 +77,11 @@ module SqsWorker
 
           it 'logs that the queue was not found' do
             expect(logger).to receive(:info).with(event_name: 'sqs_worker_queue_not_found', type: worker_class, queue_name: worker_class.config.queue_name)
-            manager.prepare_to_start
+            expect { manager.prepare_to_start }.to raise_error(SqsWorker::Errors::NonExistentQueue)
           end
 
-          it 'raises an error' do
-            expect(SqsWorker).to receive(:shutdown)
-            manager.prepare_to_start
+          it 're-raises the error' do
+            expect { manager.prepare_to_start }.to raise_error(SqsWorker::Errors::NonExistentQueue)
           end
         end
       end

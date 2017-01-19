@@ -107,7 +107,7 @@ module SqsWorker
       Sqs.instance.find_queue(worker_class.config.queue_name)
     rescue SqsWorker::Errors::NonExistentQueue => e
       SqsWorker.logger.info(event_name: 'sqs_worker_queue_not_found', type: worker_class, queue_name: worker_class.config.queue_name)
-      SqsWorker.shutdown
+      raise e
     end
 
   end
