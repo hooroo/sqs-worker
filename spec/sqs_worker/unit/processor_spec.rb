@@ -69,11 +69,11 @@ module SqsWorker
           end
 
           it 'logs the receipt of message' do
-            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_received_message', type: test_worker_class, queue_name: test_worker_class.config.queue_name)
+            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_received_message', type: test_worker_class, queue_name: test_worker_class.config.queue_name, correlation_id: correlation_id)
           end
 
           it 'logs the processing of message' do
-            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_processed_message', type: test_worker_class, queue_name: test_worker_class.config.queue_name)
+            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_processed_message', type: test_worker_class, queue_name: test_worker_class.config.queue_name, correlation_id: correlation_id)
           end
 
           it 'clears active connections on active record' do
@@ -113,7 +113,7 @@ module SqsWorker
               expect(Celluloid::Notifications.notifier).to receive(:publish).with(:unrecoverable_error, test_worker_class)
               processor.process(message)
             end
-            
+
             it 'returns with success = false' do
               result = processor.process(message)
               expect(result[:success]).to be false
