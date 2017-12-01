@@ -11,8 +11,9 @@ module SqsWorker
     let(:message_body) { { foo: 'bar' } }
 
     let(:correlation_id) { 'abc123' }
+    let(:message_id) { '123abc999' }
 
-    let(:message) { instance_double(AWS::SQS::ReceivedMessage) }
+    let(:message) { instance_double(AWS::SQS::ReceivedMessage, id: message_id) }
     let(:parsed_message) { OpenStruct.new(message_hash) }
 
     let(:worker) { instance_double(test_worker_class, perform: nil) }
@@ -69,11 +70,11 @@ module SqsWorker
           end
 
           it 'logs the receipt of message' do
-            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_received_message', type: test_worker_class, queue_name: test_worker_class.config.queue_name, correlation_id: correlation_id)
+            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_received_message', type: test_worker_class, queue_name: test_worker_class.config.queue_name, message_id: message_id, correlation_id: correlation_id)
           end
 
           it 'logs the processing of message' do
-            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_processed_message', type: test_worker_class, queue_name: test_worker_class.config.queue_name, correlation_id: correlation_id)
+            expect(logger).to have_received(:info).with(event_name: 'sqs_worker_processed_message', type: test_worker_class, queue_name: test_worker_class.config.queue_name, message_id: message_id, correlation_id: correlation_id)
           end
 
           it 'clears active connections on active record' do

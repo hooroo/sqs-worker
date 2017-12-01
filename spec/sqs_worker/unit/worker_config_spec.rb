@@ -31,7 +31,7 @@ module SqsWorker
       end
 
       it 'sets the fetcher batch size to the correct size' do
-        expect(worker_config.fetcher_batch_size).to eq(config[:processors] / worker_config.num_fetchers)
+        expect(worker_config.fetcher_batch_size).to eq(1) # eq(config[:processors] / worker_config.num_fetchers)
       end
 
       it 'sets the number of fetchers to the correct size' do
@@ -93,7 +93,7 @@ module SqsWorker
       end
 
       it 'sets the fetcher batch size to the maximum allowable size (defined by aws-sdk)' do
-        expect(worker_config.fetcher_batch_size).to eq(WorkerConfig::MAX_FETCH_BATCH_SIZE)
+        expect(worker_config.fetcher_batch_size).to eq(1) # eq(WorkerConfig::MAX_FETCH_BATCH_SIZE)
       end
 
     end

@@ -15,7 +15,7 @@ module SqsWorker
 
       let(:parsed_message) { message_parser.parse(message) }
 
-      context 'with a deeply nested message body' do
+      context 'with a body sent directly via SQS' do
 
         let(:json_message) { { 'body' => message_body, 'message_attributes' => message_attributes }.to_json }
 

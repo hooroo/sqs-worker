@@ -11,15 +11,15 @@ module SqsWorker
     def initialize(config)
       raise 'You must specify a queue name for all SqsWorker classes.' unless config[:queue_name]
 
-      num_processors = [config[:processors].to_i, MIN_PROCESSORS].max
-
-      @num_processors = num_processors
+      @num_processors = [config[:processors].to_i, MIN_PROCESSORS].max
       @num_fetchers = MIN_POOL_SIZE
       @num_batchers = MIN_POOL_SIZE
       @num_deleters = MIN_POOL_SIZE
       @queue_name = config[:queue_name]
       @empty_queue_throttle = config[:empty_queue_throttle] || DEFAULT_EMPTY_QUEUE_THROTTLE
-      @fetcher_batch_size = [(@num_processors / @num_fetchers).to_i, MAX_FETCH_BATCH_SIZE].min
+
+      # limited to 1 for testing purposes - see team-seas#293
+      @fetcher_batch_size = 1 #[(@num_processors / @num_fetchers).to_i, MAX_FETCH_BATCH_SIZE].min
     end
 
   end

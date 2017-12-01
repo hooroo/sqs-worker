@@ -38,6 +38,18 @@ module SqsWorker
       it 'logs the successful fetching of messages' do
         expect(logger).to have_received(:info).with(event_name: 'sqs_worker_fetched_messages', queue_name: queue_name, size: messages.size)
       end
+
+      context 'when there is a single message returned (ie batch size is 1)' do
+        let(:messages) { 'message' }
+
+        it 'fetches messages from the queue and passes to manager, as an array' do
+          expect(manager).to have_received(:fetch_done).with([messages])
+        end
+
+        it 'logs the successful fetching of messages' do
+          expect(logger).to have_received(:info).with(event_name: 'sqs_worker_fetched_messages', queue_name: queue_name, size: 1)
+        end
+      end
     end
 
     describe 'when there are errors in the client' do

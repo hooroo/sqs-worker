@@ -23,9 +23,9 @@ module SqsWorker
         correlation_id = correlation_id_from(parsed_message)
         store_correlation_id(correlation_id)
 
-        log_event('sqs_worker_received_message', correlation_id)
+        log_event('sqs_worker_received_message', message.id, correlation_id)
         worker_class.new.perform(parsed_message.body)
-        log_event('sqs_worker_processed_message', correlation_id)
+        log_event('sqs_worker_processed_message', message.id, correlation_id)
 
       rescue SqsWorker::Errors::UnrecoverableError => error
         publish(:unrecoverable_error, worker_class)
@@ -66,8 +66,8 @@ module SqsWorker
       )
     end
 
-    def log_event(event_name, correlation_id)
-      SqsWorker.logger.info(event_name: event_name, type: worker_class, queue_name: worker_class.config.queue_name, correlation_id: correlation_id)
+    def log_event(event_name, message_id, correlation_id)
+      SqsWorker.logger.info(event_name: event_name, type: worker_class, queue_name: worker_class.config.queue_name, message_id: message_id, correlation_id: correlation_id)
     end
   end
 end
