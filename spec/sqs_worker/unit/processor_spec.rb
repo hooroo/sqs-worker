@@ -164,7 +164,7 @@ module SqsWorker
       context 'when shutting down' do
 
         before do
-          processor.publish('SIGTERM')
+          processor.send(:publish, 'SIGTERM')
         end
 
         it 'does not process the message' do
@@ -181,7 +181,7 @@ module SqsWorker
     end
 
     it 'subscribes for shutdown' do
-      processor.publish('SIGTERM')
+      processor.send(:publish, 'SIGTERM')
       expect(processor.shutting_down?).to be true
     end
 

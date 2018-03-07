@@ -46,7 +46,7 @@ module SqsWorker
       context 'when shutting down' do
 
         before do
-          batcher.publish('SIGTERM')
+          batcher.send(:publish, 'SIGTERM')
         end
 
         it 'does not process the message and calls manager batch_done with empty array' do
@@ -59,7 +59,7 @@ module SqsWorker
     end
 
     it 'subscribes for shutdown' do
-      batcher.publish('SIGTERM')
+      batcher.send(:publish, 'SIGTERM')
       expect(batcher.shutting_down?).to be true
     end
 

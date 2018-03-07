@@ -3,7 +3,7 @@ require_relative 'integration_spec_helper'
 describe "failures to contact sqs" do
   let!(:fake_sqs) { FakeSqs.new }
 
-  let(:fail_times) { 15 }
+  let(:fail_times) { 10 }
   let(:logger) { Logger.new(StringIO.new) }
 
   let(:worker_class) do

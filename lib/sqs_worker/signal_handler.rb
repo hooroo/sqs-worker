@@ -13,6 +13,11 @@ module SqsWorker
       subscribe('SIGUSR2', :starting)
     end
 
+    # Celluloid 0.17.3 has made the #publish method private because it's flagged as a module_function
+    def publish(pattern, *args)
+      super
+    end
+
     def stopping(signal)
       @stopping = true
     end
