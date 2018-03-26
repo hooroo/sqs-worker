@@ -1,4 +1,4 @@
-require 'aws-sdk-v1'
+require 'aws-sdk'
 require 'singleton'
 require 'sqs_worker/topic'
 require 'sqs_worker/errors'
