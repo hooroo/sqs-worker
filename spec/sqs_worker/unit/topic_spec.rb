@@ -6,7 +6,7 @@ module SqsWorker
 
     subject { described_class.new(topic, message_factory: message_factory) }
 
-    let(:topic) { instance_double(AWS::SNS::Topic, publish: nil, name: topic_name) }
+    let(:topic) { instance_double(Aws::SNS::Topic, publish: nil, name: topic_name) }
     let(:topic_name) { 'topic_name' }
     let(:message_factory) { instance_double(MessageFactory, message: constructed_message) }
     let(:message_to_publish) { { test: 'message' } }

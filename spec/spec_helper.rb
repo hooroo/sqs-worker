@@ -6,7 +6,7 @@ require 'timecop'
 # require "codeclimate-test-reporter"
 # CodeClimate::TestReporter.start
 
-# AWS.config({
+# Aws.config.update({
 #   use_ssl: false,
 #   sqs_endpoint: "localhost",
 #   sqs_port: 4568,

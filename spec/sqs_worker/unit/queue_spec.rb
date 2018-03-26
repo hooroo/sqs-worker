@@ -6,7 +6,7 @@ module SqsWorker
 
     subject { described_class.new(queue, queue_name, message_factory: message_factory) }
 
-    let(:queue) { instance_double(AWS::SQS::Queue, send_message: nil, batch_send: nil) }
+    let(:queue) { instance_double(Aws::SQS::Queue, send_message: nil, batch_send: nil) }
     let(:queue_name) { 'queue_name' }
     let(:message_factory) { instance_double(MessageFactory, message: constructed_message) }
     let(:message_to_publish) { { test: 'message' } }

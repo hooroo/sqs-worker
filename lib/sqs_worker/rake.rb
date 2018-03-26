@@ -5,8 +5,8 @@ namespace :sqs_worker do
   task :run_all => :environment do
 
     def setup_sqs_without_debug_logging
-      AWS.config(log_level: :debug)
-      sqs = AWS::SQS.new
+      Aws.config.update({ log_level: :debug })
+      sqs = Aws::SQS.Resource.new
       sqs.config.logger.level = 1
       sqs
     end

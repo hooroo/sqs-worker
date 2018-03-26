@@ -9,8 +9,8 @@ module SqsWorker
     include Singleton
 
     def initialize
-      AWS.config(log_level: :debug)
-      @sns = ::AWS::SNS.new(logger: SqsWorker.logger)
+      Aws.config.update({ log_level: :debug })
+      @sns = ::Aws::SNS.Resource.new(logger: SqsWorker.logger)
       @topics = sns.topics.entries
       super(@sns)
     end

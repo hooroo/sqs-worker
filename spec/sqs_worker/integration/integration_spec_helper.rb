@@ -10,7 +10,7 @@ require_relative '../support/null_heartbeat_monitor'
 require_relative '../support/stub_worker'
 require_relative '../support/failing_stub_worker'
 
-AWS.config({
+Aws.config.update({
   use_ssl: false,
   sqs_endpoint: "localhost",
   sqs_port: 4568,
