@@ -6,7 +6,7 @@ module SqsWorker
 
     subject { described_class.new(queue, queue_name, message_factory: message_factory) }
 
-    let(:queue) { instance_double(Aws::SQS::Queue, send_message: nil, batch_send: nil) }
+    let(:queue) { instance_double(Aws::SQS::Queue, send_message: nil, send_messages: nil) }
     let(:queue_name) { 'queue_name' }
     let(:message_factory) { instance_double(MessageFactory, message: constructed_message) }
     let(:message_to_publish) { { test: 'message' } }
@@ -33,10 +33,10 @@ module SqsWorker
       end
     end
 
-    describe '#batch_send' do
+    describe '#send_messages' do
       let(:message_to_publish) { [{ test: 'message' }] }
 
-      before { subject.batch_send(message_to_publish) }
+      before { subject.send_messages(message_to_publish) }
 
       it 'uses the message factory to construct a message' do
         message_to_publish.each do |msg|
@@ -45,7 +45,7 @@ module SqsWorker
       end
 
       it 'sends the constructed message' do
-        expect(queue).to have_received(:batch_send).with([constructed_message.to_json])
+        expect(queue).to have_received(:send_messages).with([constructed_message.to_json])
       end
 
       it 'logs the event being sent' do

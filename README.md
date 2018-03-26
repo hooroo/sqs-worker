@@ -73,7 +73,7 @@ Messages can then be placed on the queue:
 ```ruby
 my_queue.send_message({ foo: 'bar' })
 # Or by batch:
-my_queue.batch_send([{ foo: 'bar' }, { fizz: 'buzz' }])
+my_queue.send_messages([{ foo: 'bar' }, { fizz: 'buzz' }])
 ```
 
 Currently only json can be placed on the queue and should be supplied as a ruby hash.
