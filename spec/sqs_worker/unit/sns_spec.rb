@@ -6,22 +6,22 @@ module SqsWorker
 
     subject(:sns) { described_class.clone.instance }
 
-    let(:aws_sns) { double(Aws::SNS, topics: topics) }
+    let(:aws_sns) { double(Aws::SNS::Resource, topics: topics) }
     let(:logger) { double('logger') }
     let(:topics) { [topic, other_topic] }
-    let(:topic) { instance_double(Aws::SNS::Topic, name: topic_name) }
-    let(:other_topic) { instance_double(Aws::SNS::Topic, name: 'other_topic') }
+    let(:topic) { instance_double(Aws::SNS::Topic, attributes: {'DisplayName' => topic_name}) }
+    let(:other_topic) { instance_double(Aws::SNS::Topic, attributes: {'DisplayName' => 'other_topic'}) }
     let(:topic_name) { 'test_topic' }
 
     describe '#find_topic' do
 
       before do
         allow(SqsWorker).to receive(:logger).and_return(logger)
-        allow(Aws::SNS).to receive(:new).and_return(aws_sns)
+        allow(Aws::SNS::Resource).to receive(:new).and_return(aws_sns)
       end
 
       it 'returns the topic with the same name' do
-        expect(sns.find_topic(topic_name).name).to eq(topic_name)
+        expect(sns.find_topic(topic_name).attributes['DisplayName']).to eq(topic_name)
       end
 
       it 'returns a wrapped topic instance' do

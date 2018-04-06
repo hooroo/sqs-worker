@@ -10,18 +10,24 @@ module SqsWorker
 
     def initialize
       Aws.config.update({ log_level: :debug })
-      @sns = ::Aws::SNS.Resource.new(logger: SqsWorker.logger)
-      @topics = sns.topics.entries
+      @sns = ::Aws::SNS::Resource.new(logger: SqsWorker.logger)
+      @topics = sns.topics
       super(@sns)
     end
 
     def find_topic(topic_name)
-      sns.create_topic({ name: topic_name })
+      topic = topics.find { |t| t.attributes['DisplayName'] == topic_name }
+      return Topic.new(topic) unless topic.nil?
+      raise SqsWorker::Errors::NonExistentTopic, "No topic found with name '#{topic_name}', found these topics: #{topic_names.join(', ')}"
     end
 
     private
 
     attr_reader :sns, :topics
+
+    def topic_names
+      sns.topics.map { |t| t.attributes['DisplayName'] }
+    end
 
   end
 

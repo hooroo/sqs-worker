@@ -10,14 +10,13 @@ module SqsWorker
 
     def initialize
       Aws.config.update({ log_level: :debug })
-      @sqs = ::Aws::SQS.Resource.new(logger: SqsWorker.logger)
-      @queues = sqs.queues
+      @sqs = ::Aws::SQS::Resource.new(logger: SqsWorker.logger)
       @queue_cache = {}
       super(@sqs)
     end
 
     def find_queue(queue_name)
-      @queue_cache[queue_name] ||= Queue.new(queues.named(queue_name.to_s), queue_name.to_s)
+      @queue_cache[queue_name] ||= Queue.new(sqs.get_queue_by_name(queue_name.to_s), queue_name.to_s)
     rescue Aws::SQS::Errors::NonExistentQueue => e
       raise SqsWorker::Errors::NonExistentQueue, "No queue found with name '#{queue_name}'"
     end
