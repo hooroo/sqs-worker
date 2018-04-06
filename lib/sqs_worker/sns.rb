@@ -16,10 +16,7 @@ module SqsWorker
     end
 
     def find_topic(topic_name)
-      topics.each do |topic|
-        return Topic.new(topic) if topic_name == topic.name
-      end
-      raise SqsWorker::Errors::NonExistentTopic, "No topic found with name '#{topic_name}', found these topics: #{sns.topics.map(&:name).join(', ')}"
+      sns.create_topic({ name: topic_name })
     end
 
     private
