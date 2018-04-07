@@ -22,7 +22,7 @@ module SqsWorker
 
       it 'finds the queue using the correct queue name' do
         sqs.find_queue(queue_name)
-        expect(aws_sqs).to have_received(:get_queue_by_name).with(queue_name)
+        expect(aws_sqs).to have_received(:get_queue_by_name).with({queue_name: queue_name})
       end
 
       it 'creates the queue with the sqs queue and correct queue name' do

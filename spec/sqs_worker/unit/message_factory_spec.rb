@@ -11,6 +11,12 @@ module SqsWorker
 
     let(:message) { message_factory.message(message_to_publish) }
     let(:message_to_publish) { '{ "json" : "message" }' }
+    let(:correlation_id_attribute) {
+      {
+        data_type: 'String',
+        string_value: expected_correlation_id
+      }
+    }
 
     before do
       allow(SecureRandom).to receive(:uuid).and_return(uuid)
@@ -22,18 +28,20 @@ module SqsWorker
       describe 'adding a correlation_id as a message attribute' do
 
         context 'when the correlation_id already has been set in the current thread' do
+          let(:expected_correlation_id) { correlation_id }
 
           it 'uses the specified value' do
-            expect(message[:message_attributes][:correlation_id]).to eq(correlation_id)
+            expect(message[:message_attributes]['correlation_id']).to eq(correlation_id_attribute)
           end
         end
 
         context 'when the correlation_id already has not been set in the current thread' do
 
           let(:correlation_id) { nil }
+          let(:expected_correlation_id) { uuid }
 
           it 'uses a generated uuid' do
-            expect(message[:message_attributes][:correlation_id]).to eq(uuid)
+            expect(message[:message_attributes]['correlation_id']).to eq(correlation_id_attribute)
           end
         end
       end
@@ -41,7 +49,7 @@ module SqsWorker
       context 'when the message is a String' do
 
         it 'converts it to json' do
-          expect(message[:body]).to eq({ 'json' => 'message' })
+          expect(message[:message]).to eq({ 'json' => 'message' })
         end
       end
 
@@ -50,7 +58,7 @@ module SqsWorker
         let(:message_to_publish) { { 'not a string' => 'json' } }
 
         it 'includes the message as is' do
-          expect(message[:body]).to eq(message_to_publish)
+          expect(message[:message]).to eq(message_to_publish)
         end
       end
     end

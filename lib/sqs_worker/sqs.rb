@@ -16,7 +16,8 @@ module SqsWorker
     end
 
     def find_queue(queue_name)
-      @queue_cache[queue_name] ||= Queue.new(sqs.get_queue_by_name(queue_name.to_s), queue_name.to_s)
+      queue = sqs.get_queue_by_name({queue_name: queue_name.to_s})
+      @queue_cache[queue_name] ||= Queue.new(queue, queue_name.to_s)
     rescue Aws::SQS::Errors::NonExistentQueue => e
       raise SqsWorker::Errors::NonExistentQueue, "No queue found with name '#{queue_name}'"
     end
