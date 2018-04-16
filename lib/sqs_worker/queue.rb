@@ -12,7 +12,18 @@ module SqsWorker
     end
 
     def send_message(message_body)
-      @queue.send_message(message_factory.message(message_body).to_json)
+      message_body = message_factory.message(message_body)
+
+      message_payload = {
+          message_attributes: {
+            'correlation_id' => {
+              data_type: 'String',
+              string_value: message_body[:message_attributes][:correlation_id]
+            }
+          },
+          message_body: message_body.to_json
+      }
+      @queue.send_message(message_payload) ## This needs to be a hash
       SqsWorker.logger.info(event_name: 'sqs_worker_sent_message', queue_name: name)
     end
 

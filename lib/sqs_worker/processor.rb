@@ -20,10 +20,13 @@ module SqsWorker
       begin
         parsed_message = message_parser.parse(message)
 
+        puts "Parsed message: #{parsed_message}"
+
         correlation_id = correlation_id_from(parsed_message)
         store_correlation_id(correlation_id)
 
         log_event('sqs_worker_received_message', message.message_id, correlation_id)
+        puts "calling worker"
         worker_class.new.perform(parsed_message.body)
         log_event('sqs_worker_processed_message', message.message_id, correlation_id)
 

@@ -9,6 +9,7 @@ module SqsWorker
     include Singleton
 
     def initialize
+      puts 'initialize called'
       Aws.config.update({ log_level: :debug })
       @sqs = ::Aws::SQS::Resource.new(logger: SqsWorker.logger)
       @queue_cache = {}
@@ -16,9 +17,11 @@ module SqsWorker
     end
 
     def find_queue(queue_name)
+      puts "  find queue: #{queue_name}"
       queue = sqs.get_queue_by_name({queue_name: queue_name.to_s})
       @queue_cache[queue_name] ||= Queue.new(queue, queue_name.to_s)
     rescue Aws::SQS::Errors::NonExistentQueue => e
+      puts e
       raise SqsWorker::Errors::NonExistentQueue, "No queue found with name '#{queue_name}'"
     end
 
