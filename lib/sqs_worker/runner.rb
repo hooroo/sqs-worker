@@ -14,10 +14,13 @@ module SqsWorker
     def run_all
       trap_signals
 
+      puts 'prepare for processing'
       prepare_to_start_processing
+      puts 'start processing'
       start_processing
 
       while true
+        puts 'entering run loop'
         handle_signals
         sleep 1
       end
