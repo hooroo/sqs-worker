@@ -27,18 +27,20 @@ describe 'Publish consumer spec' do
 
       def perform(message)
         puts "Worker perform called: #{message}"
+        e = EventProcessor.new
+        e.perform(message)
       end
     end
   }
 
-  let(:dbl) { instance_spy(sqs_worker_class) }
-
   let(:heartbeat_monitor) { SqsWorker::Heartbeat::LogFileHeartbeatMonitor.new(logger: SqsWorker.heartbeat_logger, threshold_seconds: 60) }
-  let(:manager) { SqsWorker::Manager.new(worker_class: dbl, heartbeat_monitor: heartbeat_monitor) }
+  let(:manager) { SqsWorker::Manager.new(worker_class: sqs_worker_class, heartbeat_monitor: heartbeat_monitor) }
   let(:fetcher) { SqsWorker::Fetcher.new(queue_name: test_queue, manager: manager, batch_size: 1) }
 
 
   before do
+    allow(EventProcessor).to receive(:new).and_return(event_processor)
+    allow(event_processor).to receive(:perform)
     Aws.config.update({ region: 'ap-southeast-2' })
     SqsWorker.logger = logger
     url = sqs.create_queue(queue_name: test_queue, attributes: {}).url
@@ -103,7 +105,7 @@ describe 'Publish consumer spec' do
 
       it 'consumes the message' do
         message_payload = OpenStruct.new(body: sample_event, message_attributes: { correlation_id: '123' })
-        expect(dbl).to have_received(:perform)
+        expect(event_processor).to have_received(:perform)
       end
     end
   end
