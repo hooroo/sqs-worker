@@ -37,10 +37,7 @@ module SqsWorker
     end
 
     def fetch_messages(num)
-      puts "fetching messages with #{num}"
       after(throttle) do
-        puts "  -> doing async fetch"
-        puts "  -> shutting_down?: #{shutting_down?}"
         num.times { fetcher.async.fetch unless shutting_down? }
       end
     end
@@ -107,8 +104,7 @@ module SqsWorker
     end
 
     def verify_queue_is_accessible!
-      x = Sqs.instance.find_queue(worker_class.config.queue_name)
-      puts x.inspect
+      Sqs.instance.find_queue(worker_class.config.queue_name)
     rescue SqsWorker::Errors::NonExistentQueue => e
       SqsWorker.logger.info(event_name: 'sqs_worker_queue_not_found', type: worker_class, queue_name: worker_class.config.queue_name)
       raise e

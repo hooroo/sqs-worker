@@ -5,19 +5,14 @@ require 'aws-sdk-sns'
 describe 'Publish consumer spec' do
 
   class EventProcessor
-    def perform(message)
-      puts "event processor called #{message}"
-    end
+    def perform(message); end
   end
 
-  let(:sqs) { Aws::SQS::Resource.new }
-  let(:sns) { Aws::SNS::Resource.new }
-  let(:aws_env_name) { ENV['AWS_ENV_NAME'] }
-  #let(:random_seed)   { SecureRandom.uuid }
-  let(:test_queue) { "#{aws_env_name}-sqs_worker-sqs-test" }
-  let(:event_processor) { instance_double(EventProcessor) }
+  let(:fetcher) { SqsWorker::Fetcher.new(queue_name: test_queue, manager: manager, batch_size: 1) }
+  let(:test_queue) { "sqs-worker-sqs-test-#{random_seed}" }
+  let(:random_seed) { SecureRandom.uuid }
 
-  let(:logger) { Logger.new(StringIO.new) }
+  let(:manager) { SqsWorker::Manager.new(worker_class: sqs_worker_class, heartbeat_monitor: heartbeat_monitor) }
 
   let(:sqs_worker_class) {
     queue_name = test_queue
@@ -26,7 +21,6 @@ describe 'Publish consumer spec' do
       configure queue_name: queue_name
 
       def perform(message)
-        puts "Worker perform called: #{message}"
         e = EventProcessor.new
         e.perform(message)
       end
@@ -34,49 +28,50 @@ describe 'Publish consumer spec' do
   }
 
   let(:heartbeat_monitor) { SqsWorker::Heartbeat::LogFileHeartbeatMonitor.new(logger: SqsWorker.heartbeat_logger, threshold_seconds: 60) }
-  let(:manager) { SqsWorker::Manager.new(worker_class: sqs_worker_class, heartbeat_monitor: heartbeat_monitor) }
-  let(:fetcher) { SqsWorker::Fetcher.new(queue_name: test_queue, manager: manager, batch_size: 1) }
 
+  let(:sqs) { Aws::SQS::Resource.new }
+  let(:sns) { Aws::SNS::Resource.new }
+  let(:event_processor) { instance_double(EventProcessor) }
+  let(:logger) { Logger.new(StringIO.new) }
 
   before do
-    allow(EventProcessor).to receive(:new).and_return(event_processor)
-    allow(event_processor).to receive(:perform)
     Aws.config.update({ region: 'ap-southeast-2' })
     SqsWorker.logger = logger
-    url = sqs.create_queue(queue_name: test_queue, attributes: {}).url
-    puts "queue created at: #{url}"
     allow(sqs_worker_class).to receive(:perform)
+    allow(EventProcessor).to receive(:new).and_return(event_processor)
+    allow(event_processor).to receive(:perform)
+    sqs.create_queue(queue_name: test_queue, attributes: {}).url
     manager.prepare_to_start
   end
 
   after do
     queue = sqs.get_queue_by_name(queue_name: test_queue)
-    #queue.delete
+    queue.delete
   end
 
   context 'consume message' do
     let(:sample_event) {
       {
-          id: '0ce61d60-d4cf-57a2-81a6-773ebd97e67b',
-          aggregate_id: '06cd0aa7-0440-4f1d-b4a5-a27d4f87384a',
-          data: {
-              '1.0': {}
+        id: '0ce61d60-d4cf-57a2-81a6-773ebd97e67b',
+        aggregate_id: '06cd0aa7-0440-4f1d-b4a5-a27d4f87384a',
+        data: {
+          '1.0': {}
+        },
+        metadata: {
+          correlation_id: '450cb0ae-855d-4aa9-883f-cb1e97b6c586',
+          client_references: {
+            bookings: {
+              id: '06cd0aa7-0440-4f1d-b4a5-a27d4f87384a',
+              change_id: 'e78fe212-f17b-49ed-bd34-cb21c24aaff1',
+              reference: 'JQJP3T4RM'
+            }
           },
-          metadata: {
-              correlation_id: '450cb0ae-855d-4aa9-883f-cb1e97b6c586',
-              client_references: {
-                  bookings: {
-                      id: '06cd0aa7-0440-4f1d-b4a5-a27d4f87384a',
-                      change_id: 'e78fe212-f17b-49ed-bd34-cb21c24aaff1',
-                      reference: 'JQJP3T4RM'
-                  }
-              },
-              triggering_user: nil,
-              triggering_event_id: '51105f79-2f49-5410-8f0c-93d86427489e',
-              triggering_event_type: 'booking_reservation_creation_request_failed'
-          },
-          created_at: '2018-04-09T05:03:45.166Z',
-          event_type: 'shoryuken_acceptance_test_event'
+          triggering_user: nil,
+          triggering_event_id: '51105f79-2f49-5410-8f0c-93d86427489e',
+          triggering_event_type: 'booking_reservation_creation_request_failed'
+        },
+        created_at: '2018-04-09T05:03:45.166Z',
+        event_type: 'sqs_worker_acceptance_test_event'
       }
     }
 
@@ -89,7 +84,6 @@ describe 'Publish consumer spec' do
     #
     #  Not sure this quite gets it either as the SNS message then has a `body` where as the content is
     #  encoded directly in the message.body of an SQS message
-
 
     context 'published via sqs_event_publisher' do
       let(:sqs_publisher) { SqsWorker::Sqs.instance.find_queue(test_queue) }
@@ -104,8 +98,7 @@ describe 'Publish consumer spec' do
       end
 
       it 'consumes the message' do
-        message_payload = OpenStruct.new(body: sample_event, message_attributes: { correlation_id: '123' })
-        expect(event_processor).to have_received(:perform)
+        expect(event_processor).to have_received(:perform).with(sample_event)
       end
     end
   end

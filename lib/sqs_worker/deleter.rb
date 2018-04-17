@@ -15,7 +15,8 @@ module SqsWorker
           receipt_handle: m.receipt_handle
         }
       end
-      queue.delete_messages({entries: entries}) unless entries.empty?
+
+      queue.delete_messages({ entries: entries }) unless entries.empty?
     end
 
     private
