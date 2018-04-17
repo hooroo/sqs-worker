@@ -1,6 +1,6 @@
 require 'spec_helper'
 require 'sqs_worker/sqs'
-require 'aws-sdk-sns'
+require 'sqs_worker/sns'
 
 describe 'Publish consumer spec' do
 
@@ -9,7 +9,7 @@ describe 'Publish consumer spec' do
   end
 
   let(:fetcher) { SqsWorker::Fetcher.new(queue_name: test_queue, manager: manager, batch_size: 1) }
-  let(:test_queue) { "sqs-worker-sqs-test-#{random_seed}" }
+  let(:test_queue) { "sqs-worker-sqs-test-queue-#{random_seed}" }
   let(:random_seed) { SecureRandom.uuid }
 
   let(:manager) { SqsWorker::Manager.new(worker_class: sqs_worker_class, heartbeat_monitor: heartbeat_monitor) }
@@ -50,7 +50,8 @@ describe 'Publish consumer spec' do
   end
 
   context 'consume message' do
-    let(:sample_event) {
+
+    let(:sample_event) do
       {
         id: '0ce61d60-d4cf-57a2-81a6-773ebd97e67b',
         aggregate_id: '06cd0aa7-0440-4f1d-b4a5-a27d4f87384a',
@@ -73,7 +74,7 @@ describe 'Publish consumer spec' do
         created_at: '2018-04-09T05:03:45.166Z',
         event_type: 'sqs_worker_acceptance_test_event'
       }
-    }
+    end
 
     ### TODO Note: a straight SQS message payload is very different to an sqs message that has come from SNS
     # SQS worker did the following to handle this.
@@ -86,6 +87,7 @@ describe 'Publish consumer spec' do
     #  encoded directly in the message.body of an SQS message
 
     context 'published via sqs_event_publisher' do
+
       let(:sqs_publisher) { SqsWorker::Sqs.instance.find_queue(test_queue) }
 
       before do
@@ -94,13 +96,72 @@ describe 'Publish consumer spec' do
         sleep(2)
       end
 
+      it 'consumes the message' do
+        expect(event_processor).to have_received(:perform).with(sample_event)
+      end
+    end
+
+    context 'published via sns_event_publisher' do
+
+      let(:test_topic) { "sqs-worker-sqs-test-topic-#{random_seed}" }
+      let(:sns_publisher)  { SqsWorker::Sns.instance.find_topic(test_topic) }
+
+      let(:message) do
+        {
+          message: sample_event.to_json,
+          message_attributes: { correlation_id: { data_type: 'String', string_value: correlation_id } }
+        }
+      end
+
+      let(:correlation_id) { '450cb0ae-855d-4aa9-883f-cb1e97b6c586' }
+
+      def create_queue_policy(queue_arn, topic_arn)
+        '{
+          "Version":"2012-10-17",
+          "Id": "' + queue_arn + '/SQSDefaultPolicy",
+          "Statement":[
+            {
+              "Sid":"MySQSPolicy001",
+              "Effect":"Allow",
+              "Principal":"*",
+              "Action":"sqs:SendMessage",
+              "Resource":"' + queue_arn + '",
+              "Condition":{
+                "ArnEquals":{
+                  "AWS:SourceArn":"' + topic_arn + '"
+                }
+              }
+            }
+          ]
+        }'
+      end
+
+      before do
+        queue = sqs.get_queue_by_name(queue_name: test_queue)
+        topic = sns.create_topic(name: test_topic)
+        queue_arn = queue.attributes['QueueArn']
+        queue_policy = create_queue_policy(queue_arn, topic.arn)
+        queue.set_attributes({
+          attributes: {
+            Policy: queue_policy
+          }
+        })
+        topic.subscribe({ protocol: 'sqs', endpoint: queue_arn })
+        topic.publish(message)
+        fetcher.fetch
+        sleep(2)
+      end
+
       after do
+        topic = sns.create_topic(name: test_topic)
+        topic.delete
       end
 
       it 'consumes the message' do
         expect(event_processor).to have_received(:perform).with(sample_event)
       end
     end
+
   end
 end
 
