@@ -9,13 +9,14 @@ module SqsWorker
 
     let(:topic) { instance_double(Aws::SNS::Topic, publish: nil, attributes: {'DisplayName' => topic_name}) }
     let(:topic_name) { 'topic_name' }
-    let(:message_factory) { instance_double(MessageFactory, message: constructed_message) }
+    let(:message_factory) { instance_double(MessageFactory, message: message) }
+    let(:message) { { message_attributes: { correlation_id: correlation_id } } }
+    let(:correlation_id) { SecureRandom.uuid }
+
+    let(:constructed_message) { { message: message.to_json, message_attributes: { correlation_id: { data_type: 'String', string_value: correlation_id } } } }
     let(:message_to_publish) { { test: 'message' } }
-    let(:constructed_message) { { another: 'message' } }
-    let(:logger) { double('logger', info: nil) }
 
     before do
-      allow(SqsWorker).to receive(:logger).and_return(logger)
       subject.send_message(message_to_publish)
     end
 
@@ -26,12 +27,13 @@ module SqsWorker
       end
 
       it 'sends the constructed message' do
-        expect(topic).to have_received(:publish).with(constructed_message.to_json)
+        expect(topic).to have_received(:publish).with(constructed_message)
       end
 
       it 'logs the event being sent' do
         expect(logger).to have_received(:info).with(event_name: 'sqs_worker_sent_message', topic_name: topic_name)
       end
     end
+
   end
 end

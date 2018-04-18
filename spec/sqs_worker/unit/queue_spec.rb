@@ -14,11 +14,6 @@ module SqsWorker
 
     let(:constructed_message) { { message_body: message.to_json, message_attributes: { correlation_id: { data_type: 'String', string_value: correlation_id } } } }
     let(:message_to_publish) { { test: 'message' } }
-    let(:logger) { double('logger', info: nil) }
-
-    before do
-      allow(SqsWorker).to receive(:logger).and_return(logger)
-    end
 
     describe '#send_message' do
 

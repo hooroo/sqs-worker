@@ -11,7 +11,10 @@ module SqsWorker
     end
 
     def send_message(message_body)
-      @topic.publish(message_factory.message(message_body).to_json)
+      message_body = message_factory.message(message_body)
+      message_payload = build_message_payload_from(message_body)
+
+      @topic.publish(message_payload)
       SqsWorker.logger.info(event_name: 'sqs_worker_sent_message', topic_name: topic.attributes['DisplayName'])
     end
 
@@ -19,6 +22,18 @@ module SqsWorker
     private
 
     attr_reader :topic, :message_factory
+
+    def build_message_payload_from(message_body)
+      {
+        message: message_body.to_json,
+        message_attributes: {
+          correlation_id: {
+            data_type: 'String',
+            string_value: message_body[:message_attributes][:correlation_id]
+          }
+        }
+      }
+    end
 
   end
 end

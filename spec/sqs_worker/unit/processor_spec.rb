@@ -17,7 +17,6 @@ module SqsWorker
     let(:parsed_message) { OpenStruct.new(message_hash) }
 
     let(:worker) { instance_double(test_worker_class, perform: nil) }
-    let(:logger) { double('logger', info: nil) }
 
     let(:test_worker_class) do
       Class.new do
@@ -36,14 +35,8 @@ module SqsWorker
     let(:fake_active_record) { double('ActiveRecord::Base', clear_active_connections!: nil) }
 
     before do
-      SqsWorker.logger = logger
       stub_const('ActiveRecord::Base', fake_active_record)
     end
-
-    after do
-      SqsWorker.logger = nil
-    end
-
 
     describe '#process' do
 
@@ -83,19 +76,11 @@ module SqsWorker
         end
 
         describe 'error handling' do
-          let(:logger) { double('logger', error: nil, info: nil) }
-
-          before do
-            SqsWorker.logger = logger
-          end
 
           context 'when the worker raises an unrecoverable error' do
+
             before do
               expect(worker).to receive(:perform).with(message_body).and_raise(SqsWorker::Errors::UnrecoverableError)
-            end
-
-            after do
-              SqsWorker.logger = nil
             end
 
             it 'logs the exception' do
@@ -129,10 +114,6 @@ module SqsWorker
           context 'when the worker raises an error' do
             before do
               expect(worker).to receive(:perform).with(message_body).and_raise(StandardError)
-            end
-
-            after do
-              SqsWorker.logger = nil
             end
 
             it 'logs the exception' do

@@ -36,7 +36,6 @@ describe 'Publish consumer spec' do
 
   before do
     Aws.config.update({ region: 'ap-southeast-2' })
-    SqsWorker.logger = logger
     allow(sqs_worker_class).to receive(:perform)
     allow(EventProcessor).to receive(:new).and_return(event_processor)
     allow(event_processor).to receive(:perform)
@@ -76,16 +75,6 @@ describe 'Publish consumer spec' do
       }
     end
 
-    ### TODO Note: a straight SQS message payload is very different to an sqs message that has come from SNS
-    # SQS worker did the following to handle this.
-    #  # Get the body
-    #  parsed_message = JSON.parse(message.body).deep_symbolize_keys
-    #  # See if there is a Message attribute, in which case this is SNS so get the body from there
-    #  parsed_message = JSON.parse(parsed_message[:Message]).deep_symbolize_keys if parsed_message[:Message]
-    #
-    #  Not sure this quite gets it either as the SNS message then has a `body` where as the content is
-    #  encoded directly in the message.body of an SQS message
-
     context 'published via sqs_event_publisher' do
 
       let(:sqs_publisher) { SqsWorker::Sqs.instance.find_queue(test_queue) }
@@ -105,14 +94,6 @@ describe 'Publish consumer spec' do
 
       let(:test_topic) { "sqs-worker-sqs-test-topic-#{random_seed}" }
       let(:sns_publisher)  { SqsWorker::Sns.instance.find_topic(test_topic) }
-
-      let(:message) do
-        {
-          message: sample_event.to_json,
-          message_attributes: { correlation_id: { data_type: 'String', string_value: correlation_id } }
-        }
-      end
-
       let(:correlation_id) { '450cb0ae-855d-4aa9-883f-cb1e97b6c586' }
 
       def create_queue_policy(queue_arn, topic_arn)
@@ -147,7 +128,7 @@ describe 'Publish consumer spec' do
           }
         })
         topic.subscribe({ protocol: 'sqs', endpoint: queue_arn })
-        topic.publish(message)
+        sns_publisher.send_message(sample_event)
         fetcher.fetch
         sleep(2)
       end

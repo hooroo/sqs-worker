@@ -12,16 +12,10 @@ module SqsWorker
     let(:sqs) { double(Sqs, find_queue: queue) }
     let(:queue) { double('queue') }
     let(:messages) { ['message'] }
-    let(:logger) { double('logger', info: nil, error: nil) }
 
     before do
-      SqsWorker.logger = logger
       expect(Sqs).to receive(:instance).and_return(sqs)
       expect(sqs).to receive(:find_queue).and_return(queue)
-    end
-
-    after do
-      SqsWorker.logger = nil
     end
 
     describe 'normal operation' do
