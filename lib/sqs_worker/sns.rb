@@ -1,4 +1,4 @@
-require 'aws-sdk-v1'
+require 'aws-sdk-sns'
 require 'singleton'
 require 'sqs_worker/topic'
 require 'sqs_worker/errors'
@@ -9,23 +9,30 @@ module SqsWorker
     include Singleton
 
     def initialize
-      AWS.config(log_level: :debug)
-      @sns = ::AWS::SNS.new(logger: SqsWorker.logger)
-      @topics = sns.topics.entries
+      Aws.config.update({ log_level: :debug })
+      @sns = ::Aws::SNS::Resource.new(logger: SqsWorker.logger)
+      @topics = fetch_topics
       super(@sns)
     end
 
     def find_topic(topic_name)
-      topics.each do |topic|
-        return Topic.new(topic) if topic_name == topic.name
-      end
-      raise SqsWorker::Errors::NonExistentTopic, "No topic found with name '#{topic_name}', found these topics: #{sns.topics.map(&:name).join(', ')}"
+      topic = topics[topic_name]
+      return Topic.new(topic) unless topic.nil?
+
+      raise SqsWorker::Errors::NonExistentTopic, "No topic found with name '#{topic_name}', found these topics: #{topics.keys.sort.join(', ')}"
     end
 
     private
 
     attr_reader :sns, :topics
 
-  end
+    def fetch_topics
+      sns.topics.each_with_object({}) { |topic, hsh| hsh[topic_name(topic.arn)] = topic }
+    end
 
+    def topic_name(topic_arn)
+      topic_arn.split(/:/).last
+    end
+
+  end
 end

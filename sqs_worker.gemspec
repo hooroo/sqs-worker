@@ -27,6 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec-wait', '~> 0.0.8'
 
   spec.add_dependency 'celluloid', '~> 0.17.3'
-  spec.add_dependency 'aws-sdk-v1', '~> 1.66'
+  spec.add_dependency 'aws-sdk-sns', '~> 1.1'
+  spec.add_dependency 'aws-sdk-sqs', '~> 1.3'
   spec.add_dependency 'activesupport', '>= 3.1'
 end

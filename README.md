@@ -57,7 +57,7 @@ test:
 Add an initializer to your application to load configuration and set the logger.
 
 ```ruby
-AWS.config(YAML.load(File.read("#{Rails.root}/config/sqs.yml"))[Rails.env])
+Aws.config.update(YAML.load(File.read("#{Rails.root}/config/sqs.yml"))[Rails.env])
 SqsWorker.logger = Slate::Logger #  Can use any logger here
 
 ```
@@ -73,7 +73,7 @@ Messages can then be placed on the queue:
 ```ruby
 my_queue.send_message({ foo: 'bar' })
 # Or by batch:
-my_queue.batch_send([{ foo: 'bar' }, { fizz: 'buzz' }])
+my_queue.send_messages([{ foo: 'bar' }, { fizz: 'buzz' }])
 ```
 
 Currently only json can be placed on the queue and should be supplied as a ruby hash.

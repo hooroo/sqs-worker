@@ -46,23 +46,14 @@ module SqsWorker
         double(Heartbeat::LogFileHeartbeatMonitor)
       end
 
-      let(:logger)            { double('logger', info: nil) }
-      let(:heartbeat_logger)  { double('heartbeat logger', info: nil) }
-
       before do
-        SqsWorker.logger = logger
-        SqsWorker.heartbeat_logger = heartbeat_logger
         allow(WorkerResolver).to receive(:new).and_return worker_resolver
         allow(worker_resolver).to receive(:resolve_worker_classes).and_return worker_classes
         runner.instance_variable_set('@signals', signals_received)
 
-        allow(Heartbeat::LogFileHeartbeatMonitor).to receive(:new).with(logger: heartbeat_logger, threshold_seconds: 60).and_return(heartbeat_monitor)
+        allow(Heartbeat::LogFileHeartbeatMonitor).to receive(:new).with(logger: logger, threshold_seconds: 60).and_return(heartbeat_monitor)
         allow(Manager).to receive(:new).with(worker_class: worker_class_a, heartbeat_monitor: heartbeat_monitor).and_return(manager_a)
         allow(Manager).to receive(:new).with(worker_class: worker_class_b, heartbeat_monitor: heartbeat_monitor).and_return(manager_b)
-      end
-
-      after do
-        SqsWorker.logger = nil
       end
 
       describe 'Signal trapping' do

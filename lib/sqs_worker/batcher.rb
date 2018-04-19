@@ -12,7 +12,6 @@ module SqsWorker
     end
 
     def process(messages)
-
       successful_messages = []
 
       unless stopping?

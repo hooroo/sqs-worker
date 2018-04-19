@@ -32,14 +32,11 @@ module SqsWorker
     let(:batcher)         { double(Batcher) }
     let(:batcher_pool)    { double('batcher', async: batcher, publish: true) }
 
-    let(:logger)          { double('logger', debug: nil, info: nil) }
-
     let(:heartbeat_monitor) { double('heartbeat') }
 
     subject(:manager) { described_class.new(worker_class: worker_class, heartbeat_monitor: heartbeat_monitor) }
 
     before do
-      SqsWorker.logger = logger
       allow(SqsWorker::Sqs).to receive(:instance).and_return(sqs_instance)
       allow(sqs_instance).to receive(:find_queue).with(queue_name)
       allow(UnitStubWorker).to receive(:config).and_return(worker_config)
@@ -48,10 +45,6 @@ module SqsWorker
       allow(Deleter).to receive(:pool).with(size: worker_config.num_deleters, args: [worker_config.queue_name]).and_return(deleter_pool)
       allow(Batcher).to receive(:pool).with(size: worker_config.num_batchers, args: [{ manager: Manager, processor: processor_pool }]).and_return(batcher_pool)
       allow(heartbeat_monitor).to receive(:tick)
-    end
-
-    after do
-      SqsWorker.logger = nil
     end
 
     context 'while not shutting down' do

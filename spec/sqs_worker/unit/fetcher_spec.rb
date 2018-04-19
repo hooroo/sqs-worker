@@ -9,25 +9,19 @@ module SqsWorker
     let(:batch_size) { 5 }
     let(:queue_name) { 'queue_name' }
     let(:manager) { double(Manager, fetch_done: nil)}
-    let (:sqs) { double(Sqs, find_queue: queue) }
-    let (:queue) { double('queue') }
+    let(:sqs) { double(Sqs, find_queue: queue) }
+    let(:queue) { double('queue') }
     let(:messages) { ['message'] }
-    let(:logger) { double('logger', info: nil, error: nil) }
 
     before do
-      SqsWorker.logger = logger
       expect(Sqs).to receive(:instance).and_return(sqs)
       expect(sqs).to receive(:find_queue).and_return(queue)
     end
 
-    after do
-      SqsWorker.logger = nil
-    end
-
     describe 'normal operation' do
-      before do
-        expect(queue).to receive(:receive_message).with({ :limit => batch_size, :attributes => [:receive_count] }).and_return(messages)
 
+      before do
+        expect(queue).to receive(:receive_messages).with({ max_number_of_messages: batch_size, attribute_names: ['ApproximateReceiveCount'] }).and_return(messages)
         fetcher.fetch
       end
 
@@ -53,10 +47,11 @@ module SqsWorker
     end
 
     describe 'when there are errors in the client' do
-      let(:exception) { 'bad shit' }
-      before do
-        expect(queue).to receive(:receive_message).with(anything).and_raise('bad shit')
 
+      let(:exception) { 'errors ahoy!' }
+
+      before do
+        expect(queue).to receive(:receive_messages).with(anything).and_raise(exception)
         fetcher.fetch
       end
 

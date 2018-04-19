@@ -12,7 +12,7 @@ module SqsWorker
     end
 
     def fetch
-      messages = Array(queue.receive_message({ :limit => batch_size, :attributes => [:receive_count] }))
+      messages = Array(queue.receive_messages({ max_number_of_messages: batch_size, attribute_names: ['ApproximateReceiveCount'] }))
       log_fetched_messages(messages)
       manager.fetch_done(messages)
     rescue => e

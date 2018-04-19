@@ -9,7 +9,14 @@ module SqsWorker
     end
 
     def delete(messages)
-      queue.batch_delete(messages) unless messages.empty?
+      entries = messages.map do |m|
+        {
+          id: m.message_id,
+          receipt_handle: m.receipt_handle
+        }
+      end
+
+      queue.delete_messages({ entries: entries }) unless entries.empty?
     end
 
     private

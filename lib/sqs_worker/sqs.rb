@@ -1,4 +1,4 @@
-require 'aws-sdk-v1'
+require 'aws-sdk-sqs'
 require 'singleton'
 require 'sqs_worker/queue'
 require 'sqs_worker/errors'
@@ -9,16 +9,17 @@ module SqsWorker
     include Singleton
 
     def initialize
-      AWS.config(log_level: :debug)
-      @sqs = ::AWS::SQS.new(logger: SqsWorker.logger)
-      @queues = sqs.queues
+      Aws.config.update({ log_level: :debug })
+      @sqs = ::Aws::SQS::Resource.new(logger: SqsWorker.logger)
       @queue_cache = {}
       super(@sqs)
     end
 
     def find_queue(queue_name)
-      @queue_cache[queue_name] ||= Queue.new(queues.named(queue_name.to_s), queue_name.to_s)
-    rescue AWS::SQS::Errors::NonExistentQueue => e
+      queue = sqs.get_queue_by_name({queue_name: queue_name.to_s})
+      @queue_cache[queue_name] ||= Queue.new(queue, queue_name.to_s)
+    rescue Aws::SQS::Errors::NonExistentQueue => e
+      puts e
       raise SqsWorker::Errors::NonExistentQueue, "No queue found with name '#{queue_name}'"
     end
 
