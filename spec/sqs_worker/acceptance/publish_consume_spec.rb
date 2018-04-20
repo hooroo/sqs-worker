@@ -9,7 +9,7 @@ describe 'Publish consumer spec' do
   end
 
   let(:fetcher) { SqsWorker::Fetcher.new(queue_name: test_queue, manager: manager, batch_size: 1) }
-  let(:test_queue) { "sqs-worker-sqs-test-queue-#{random_seed}" }
+  let(:test_queue) { "test-sqs-worker-event-consumer-#{random_seed}" }
   let(:random_seed) { SecureRandom.uuid }
 
   let(:manager) { SqsWorker::Manager.new(worker_class: sqs_worker_class, heartbeat_monitor: heartbeat_monitor) }
@@ -92,7 +92,7 @@ describe 'Publish consumer spec' do
 
     context 'published via sns_event_publisher' do
 
-      let(:test_topic) { "sqs-worker-sqs-test-topic-#{random_seed}" }
+      let(:test_topic) { "sqs-worker-test-#{random_seed}" }
       let(:sns_publisher)  { SqsWorker::Sns.instance.find_topic(test_topic) }
       let(:correlation_id) { '450cb0ae-855d-4aa9-883f-cb1e97b6c586' }
 
