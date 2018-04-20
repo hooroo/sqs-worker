@@ -40,6 +40,7 @@ describe 'Publish consumer spec' do
     allow(EventProcessor).to receive(:new).and_return(event_processor)
     allow(event_processor).to receive(:perform)
     sqs.create_queue(queue_name: test_queue, attributes: {}).url
+    sleep(2)
     manager.prepare_to_start
   end
 
@@ -120,6 +121,7 @@ describe 'Publish consumer spec' do
       before do
         queue = sqs.get_queue_by_name(queue_name: test_queue)
         topic = sns.create_topic(name: test_topic)
+        sleep(2)
         queue_arn = queue.attributes['QueueArn']
         queue_policy = create_queue_policy(queue_arn, topic.arn)
         queue.set_attributes({
