@@ -135,6 +135,7 @@ describe 'Publish consumer spec' do
 
       after do
         topic = sns.create_topic(name: test_topic)
+        sleep(30)
         topic.delete
       end
 
