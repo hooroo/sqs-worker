@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'sqs_worker/sqs'
 require 'sqs_worker/sns'
 
-describe 'Publish consumer spec' do
+describe 'Publish consumer spec', local_only: true do
 
   class EventProcessor
     def perform(message); end
