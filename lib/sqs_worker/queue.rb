@@ -16,7 +16,7 @@ module SqsWorker
       message_payload = build_message_payload_from(message_body)
 
       @queue.send_message(message_payload)
-      SqsWorker.logger.info(event_name: 'sqs_worker_sent_message', queue_name: name)
+      SqsWorker.logger.debug(event_name: 'sqs_worker_sent_message', queue_name: name)
     end
 
     def send_messages(message_list)
@@ -28,7 +28,7 @@ module SqsWorker
 
       if entries.any?
         @queue.send_messages(entries: entries)
-        SqsWorker.logger.info(event_name: 'sqs_worker_batch_sent_message', queue_name: name)
+        SqsWorker.logger.debug(event_name: 'sqs_worker_batch_sent_message', queue_name: name)
       end
     end
 

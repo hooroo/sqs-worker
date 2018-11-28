@@ -30,7 +30,7 @@ module SqsWorker
       end
 
       it 'logs the successful fetching of messages' do
-        expect(logger).to have_received(:info).with(event_name: 'sqs_worker_fetched_messages', queue_name: queue_name, size: messages.size)
+        expect(logger).to have_received(:debug).with(event_name: 'sqs_worker_fetched_messages', queue_name: queue_name, size: messages.size)
       end
 
       context 'when there is a single message returned (ie batch size is 1)' do
@@ -41,7 +41,7 @@ module SqsWorker
         end
 
         it 'logs the successful fetching of messages' do
-          expect(logger).to have_received(:info).with(event_name: 'sqs_worker_fetched_messages', queue_name: queue_name, size: 1)
+          expect(logger).to have_received(:debug).with(event_name: 'sqs_worker_fetched_messages', queue_name: queue_name, size: 1)
         end
       end
     end

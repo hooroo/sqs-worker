@@ -23,10 +23,10 @@ module SqsWorker
         it 'processes messages and calls batch_done with succesfully processed messages' do
           expect(processor).to receive(:process).with(successful_message).and_return(successful_message_future)
           expect(processor).to receive(:process).with(unsuccessful_message).and_return(unsuccessful_message_future).twice
-          expect(logger).to receive(:info).with(event_name: 'sqs_worker_processing_multiple_events_start', count: 1, elapsed: anything)
-          expect(logger).to receive(:info).with(event_name: 'sqs_worker_processing_multiple_events_finish', count: 1, elapsed: anything)
-          expect(logger).to receive(:info).with(event_name: 'sqs_worker_processing_multiple_events_start', count: 2, elapsed: anything)
-          expect(logger).to receive(:info).with(event_name: 'sqs_worker_processing_multiple_events_finish', count: 2, elapsed: anything)
+          expect(logger).to receive(:debug).with(event_name: 'sqs_worker_processing_multiple_events_start', count: 1, elapsed: anything)
+          expect(logger).to receive(:debug).with(event_name: 'sqs_worker_processing_multiple_events_finish', count: 1, elapsed: anything)
+          expect(logger).to receive(:debug).with(event_name: 'sqs_worker_processing_multiple_events_start', count: 2, elapsed: anything)
+          expect(logger).to receive(:debug).with(event_name: 'sqs_worker_processing_multiple_events_finish', count: 2, elapsed: anything)
           expect(manager).to receive(:batch_done).with([successful_message])
           batcher.process(messages)
         end

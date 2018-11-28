@@ -67,7 +67,7 @@ module SqsWorker
     end
 
     def log_event(event_name, message_id, correlation_id)
-      SqsWorker.logger.info(event_name: event_name, type: worker_class, queue_name: worker_class.config.queue_name, message_id: message_id, correlation_id: correlation_id)
+      SqsWorker.logger.debug(event_name: event_name, type: worker_class, queue_name: worker_class.config.queue_name, message_id: message_id, correlation_id: correlation_id)
     end
 
   end

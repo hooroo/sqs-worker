@@ -23,14 +23,14 @@ module SqsWorker
 
           if count > 0
             elapsed = ((Time.now - start_time) * 1000).to_i
-            SqsWorker.logger.info(event_name: 'sqs_worker_processing_multiple_events_start', count: count, elapsed: elapsed)
+            SqsWorker.logger.debug(event_name: 'sqs_worker_processing_multiple_events_start', count: count, elapsed: elapsed)
           end
 
           successful_messages << result.value[:message] if result.value[:success]
 
           if count > 0
             elapsed = ((Time.now - start_time) * 1000).to_i
-            SqsWorker.logger.info(event_name: 'sqs_worker_processing_multiple_events_finish', count: count, elapsed: elapsed)
+            SqsWorker.logger.debug(event_name: 'sqs_worker_processing_multiple_events_finish', count: count, elapsed: elapsed)
           end
         end
 

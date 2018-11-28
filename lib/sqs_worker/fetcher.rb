@@ -25,7 +25,7 @@ module SqsWorker
     attr_reader :manager, :queue, :queue_name, :batch_size
 
     def log_fetched_messages(messages)
-      SqsWorker.logger.info(event_name: 'sqs_worker_fetched_messages', queue_name: queue_name, size: messages.size) unless messages.empty?
+      SqsWorker.logger.debug(event_name: 'sqs_worker_fetched_messages', queue_name: queue_name, size: messages.size) unless messages.empty?
     end
 
   end
