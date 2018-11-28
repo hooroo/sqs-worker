@@ -28,7 +28,7 @@ module SqsWorker
       end
 
       it 'logs the event being sent' do
-        expect(logger).to have_received(:info).with(event_name: 'sqs_worker_sent_message', queue_name: queue_name)
+        expect(logger).to have_received(:debug).with(event_name: 'sqs_worker_sent_message', queue_name: queue_name)
       end
     end
 
@@ -53,7 +53,7 @@ module SqsWorker
       end
 
       it 'logs the event being sent' do
-        expect(logger).to have_received(:info).with(event_name: 'sqs_worker_batch_sent_message', queue_name: queue_name)
+        expect(logger).to have_received(:debug).with(event_name: 'sqs_worker_batch_sent_message', queue_name: queue_name)
       end
 
       context 'when there are no messages to send' do

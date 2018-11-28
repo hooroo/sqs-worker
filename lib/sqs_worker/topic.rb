@@ -15,7 +15,7 @@ module SqsWorker
       message_payload = build_message_payload_from(message_body)
 
       @topic.publish(message_payload)
-      SqsWorker.logger.info(event_name: 'sqs_worker_sent_message', topic_name: topic.attributes['DisplayName'])
+      SqsWorker.logger.debug(event_name: 'sqs_worker_sent_message', topic_name: topic.attributes['DisplayName'])
     end
 
 
