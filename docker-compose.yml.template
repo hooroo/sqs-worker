@@ -9,6 +9,7 @@ app:
     DOCKER_HOST:
     BUILDBOX_COMMIT:
     BUILD_FARM_RUN:
+    CI:
     # Environments from caller
     RACK_ENV:
     RAILS_ENV:
