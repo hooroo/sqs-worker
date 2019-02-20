@@ -4,9 +4,10 @@ require_relative 'message_factory'
 module SqsWorker
   class Topic < SimpleDelegator
 
-    def initialize(topic, message_factory: MessageFactory.new)
+    def initialize(topic, name, message_factory: MessageFactory.new)
       super(topic)
       @topic = topic
+      @name = name
       @message_factory = message_factory
     end
 
@@ -15,13 +16,13 @@ module SqsWorker
       message_payload = build_message_payload_from(message_body)
 
       @topic.publish(message_payload)
-      SqsWorker.logger.debug(event_name: 'sqs_worker_sent_message', topic_name: topic.attributes['DisplayName'])
+      SqsWorker.logger.debug(event_name: 'sqs_worker_sent_message', topic_name: name)
     end
 
 
     private
 
-    attr_reader :topic, :message_factory
+    attr_reader :topic, :name, :message_factory
 
     def build_message_payload_from(message_body)
       {

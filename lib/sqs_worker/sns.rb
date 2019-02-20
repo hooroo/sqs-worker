@@ -17,7 +17,7 @@ module SqsWorker
 
     def find_topic(topic_name)
       topic = topics[topic_name]
-      return Topic.new(topic) unless topic.nil?
+      return Topic.new(topic, topic_name) unless topic.nil?
 
       raise SqsWorker::Errors::NonExistentTopic, "No topic found with name '#{topic_name}', found these topics: #{topics.keys.sort.join(', ')}"
     end

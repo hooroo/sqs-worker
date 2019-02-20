@@ -5,9 +5,9 @@ require 'sqs_worker/topic'
 module SqsWorker
   describe Topic do
 
-    subject { described_class.new(topic, message_factory: message_factory) }
+    subject { described_class.new(topic, topic_name, message_factory: message_factory) }
 
-    let(:topic) { instance_double(Aws::SNS::Topic, publish: nil, attributes: {'DisplayName' => topic_name}) }
+    let(:topic) { instance_double(Aws::SNS::Topic, publish: nil) }
     let(:topic_name) { 'topic_name' }
     let(:message_factory) { instance_double(MessageFactory, message: message) }
     let(:message) { { message_attributes: { correlation_id: correlation_id } } }
