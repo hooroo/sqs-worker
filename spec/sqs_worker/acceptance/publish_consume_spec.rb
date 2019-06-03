@@ -121,7 +121,7 @@ describe 'Publish consumer spec', local_only: true do
       before do
         queue = sqs.get_queue_by_name(queue_name: test_queue)
         topic = sns.create_topic(name: test_topic)
-        sleep(2)
+        sleep(4)
         queue_arn = queue.attributes['QueueArn']
         queue_policy = create_queue_policy(queue_arn, topic.arn)
         queue.set_attributes({
@@ -132,7 +132,7 @@ describe 'Publish consumer spec', local_only: true do
         topic.subscribe({ protocol: 'sqs', endpoint: queue_arn })
         sns_publisher.send_message(sample_event)
         fetcher.fetch
-        sleep(2)
+        sleep(4)
       end
 
       after do
