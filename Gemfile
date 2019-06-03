@@ -1,5 +1,5 @@
-source 'http://gems.services.jqdev.net'
+source 'https://repositories.services.jqdev.net/repository/rubygems/'
 
-gem 'gem_publisher', '0.0.14'
+gem 'gem_publisher', '~> 0.1.22'
 
 gemspec
