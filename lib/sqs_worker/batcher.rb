@@ -16,7 +16,7 @@ module SqsWorker
 
       unless stopping?
 
-        processed_results = messages.to_a.map { |message| processor.future.process(message) }
+        processed_results = Array(messages).map { |message| processor.future.process(message) }
 
         start_time = Time.now
         processed_results.each_with_index do |result, count|
