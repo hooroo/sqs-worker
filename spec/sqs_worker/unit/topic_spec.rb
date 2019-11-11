@@ -10,10 +10,11 @@ module SqsWorker
     let(:topic) { instance_double(Aws::SNS::Topic, publish: nil) }
     let(:topic_name) { 'topic_name' }
     let(:message_factory) { instance_double(MessageFactory, message: message) }
-    let(:message) { { message_attributes: { correlation_id: correlation_id } } }
+    let(:message) { { message_attributes: { correlation_id: correlation_id, event_type: event_type } } }
+    let(:event_type) { 'some_random_event' }
     let(:correlation_id) { SecureRandom.uuid }
 
-    let(:constructed_message) { { message: message.to_json, message_attributes: { correlation_id: { data_type: 'String', string_value: correlation_id } } } }
+    let(:constructed_message) { { message: message.to_json, message_attributes: { correlation_id: { data_type: 'String', string_value: correlation_id }, event_type: { data_type: 'String', string_value: event_type } } } }
     let(:message_to_publish) { { test: 'message' } }
 
     before do

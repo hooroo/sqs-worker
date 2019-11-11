@@ -11,7 +11,7 @@ module SqsWorker
       let(:message) { instance_double(Aws::SQS::Message, body: json_message) }
 
       let(:message_body) { { 'foo' => 'bar', 'nested' => { 'baz' => 'boz'}, 'array' => [ { 'zip' => 'zap' } ] } }
-      let(:message_attributes) { { 'correlation_id' => 'some_id' } }
+      let(:message_attributes) { { 'correlation_id' => 'some_id', 'event_type' => 'some_event_type' } }
 
       let(:parsed_message) { message_parser.parse(message) }
 
@@ -24,7 +24,7 @@ module SqsWorker
         end
 
         it 'returns a message with a parsed message attributes with symbolized keys' do
-          expect(parsed_message.message_attributes).to eq({ correlation_id: 'some_id' })
+          expect(parsed_message.message_attributes).to eq({ correlation_id: 'some_id', event_type: 'some_event_type' })
         end
       end
 
@@ -37,7 +37,7 @@ module SqsWorker
         end
 
         it 'returns a message with a parsed message attributes with symbolized keys' do
-          expect(parsed_message.message_attributes).to eq({ correlation_id: 'some_id' })
+          expect(parsed_message.message_attributes).to eq({ correlation_id: 'some_id', event_type: 'some_event_type' })
         end
       end
 

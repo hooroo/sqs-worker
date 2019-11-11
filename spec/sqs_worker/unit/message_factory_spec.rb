@@ -5,12 +5,13 @@ module SqsWorker
   describe MessageFactory do
 
     subject(:message_factory) { described_class.new }
-
+  
     let(:correlation_id) { 'abc123' }
+    let(:event_type) { 'booking_blocked' } 
     let(:uuid) { 'xyz987' }
 
     let(:message) { message_factory.message(message_to_publish) }
-    let(:message_to_publish) { '{ "json" : "message" }' }
+    let(:message_to_publish) { double(event_type: event_type) }
 
     before do
       allow(SecureRandom).to receive(:uuid).and_return(uuid)
@@ -38,7 +39,28 @@ module SqsWorker
         end
       end
 
+      describe 'adding the event_type as a message attribute' do
+
+        context 'when the event_type exists' do
+
+          it 'uses the specified event type' do
+            expect(message[:message_attributes][:event_type]).to eq(event_type)
+          end
+        end
+
+        context 'when the event_type does not exist' do
+
+          let(:event_type) { nil }
+
+          it 'sets the event_type as unknown' do
+            expect(message[:message_attributes][:event_type]).to eq('unknown')
+          end
+        end
+      end
+
       context 'when the message is a String' do
+
+        let(:message_to_publish) { '{ "json" : "message" }' }
 
         it 'converts it to json' do
           expect(message[:body]).to eq({ 'json' => 'message' })

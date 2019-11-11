@@ -31,6 +31,10 @@ module SqsWorker
           correlation_id: {
             data_type: 'String',
             string_value: message_body[:message_attributes][:correlation_id]
+          },
+          event_type: {
+            data_type: 'String',
+            string_value: message_body[:message_attributes][:event_type]
           }
         }
       }

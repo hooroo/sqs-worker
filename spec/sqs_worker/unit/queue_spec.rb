@@ -9,10 +9,11 @@ module SqsWorker
     let(:queue) { instance_double(Aws::SQS::Queue, send_message: nil, send_messages: nil) }
     let(:queue_name) { 'queue_name' }
     let(:message_factory) { instance_double(MessageFactory, message: message) }
-    let(:message) { { message_attributes: { correlation_id: correlation_id } } }
+    let(:message) { { message_attributes: { correlation_id: correlation_id, event_type: event_type } } }
     let(:correlation_id) { SecureRandom.uuid }
+    let(:event_type) { 'some_event_type' }
 
-    let(:constructed_message) { { message_body: message.to_json, message_attributes: { correlation_id: { data_type: 'String', string_value: correlation_id } } } }
+    let(:constructed_message) { { message_body: message.to_json, message_attributes: { correlation_id: { data_type: 'String', string_value: correlation_id }, event_type: { data_type: 'String', string_value: event_type } } } }
     let(:message_to_publish) { { test: 'message' } }
 
     describe '#send_message' do

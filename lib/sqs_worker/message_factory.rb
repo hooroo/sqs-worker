@@ -4,7 +4,8 @@ class MessageFactory
   def message(body)
     {
       message_attributes: {
-        correlation_id: correlation_id
+        correlation_id: correlation_id,
+        event_type: event_type(body) || 'unknown'
       },
       body: parse_message(body)
     }
@@ -17,6 +18,10 @@ class MessageFactory
 
   def correlation_id
     Thread.current[:correlation_id] ||= SecureRandom.uuid
+  end
+
+  def event_type(body)
+    body.event_type if defined?(body.event_type)
   end
 
   def parse_message(message)
