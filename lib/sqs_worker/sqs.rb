@@ -9,7 +9,7 @@ module SqsWorker
     include Singleton
 
     def initialize
-      Aws.config.update({ log_level: :info })
+      Aws.config.update({ log_level: :error })
       # debug log level was logging sqs messages which caused PI leakage for flightbooking events
       @sqs = ::Aws::SQS::Resource.new(logger: SqsWorker.logger)
       @queue_cache = {}
