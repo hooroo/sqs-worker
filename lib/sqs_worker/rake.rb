@@ -5,6 +5,7 @@ namespace :sqs_worker do
   task :run_all => :environment do
 
     def setup_sqs_without_debug_logging
+      Aws.config.update({ log_level: :error })
       sqs = Aws::SQS::Resource.new
       sqs
     end
