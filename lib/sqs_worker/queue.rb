@@ -15,13 +15,7 @@ module SqsWorker
       message_body = message_factory.message(message_body)
       message_payload = build_message_payload_from(message_body)
 
-      if SqsWorker.logger.respond_to?(:silence)
-        SqsWorker.logger.silence do
-          @queue.send_message(message_payload)
-        end
-      else
-        @queue.send_message(message_payload)
-      end
+      @queue.send_message(message_payload)
       SqsWorker.logger.debug(event_name: 'sqs_worker_sent_message', queue_name: name)
     end
 
